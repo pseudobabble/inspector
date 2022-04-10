@@ -1,0 +1,23 @@
+* Notes
+** Use Cases
+*** Extract Answer from Documents
+1. Upload documents
+   a. Models
+      a. Document
+      b. File
+      c. Question
+      d. Label
+   b. Services
+      a. DocumentBuilder
+      b. DocumentRepository
+2. Select documents for labelling
+   a. DocumentRepository
+3. label documents
+4. build model
+5. evaluate model
+   a. Remediate
+6. extract with model
+
+**** blah
+- some blah
+- More blah

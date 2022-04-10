@@ -1,0 +1,27 @@
+{
+  "job_name": "preprocess_documents",
+  "repository_location_name": "dagster-ucd-document-processing",
+  "repository_name": "__repository__preprocess_documents",
+  "run_config": {
+    "ops": {
+      "preprocess_docs": {
+        "config": {
+          "document_ids": [1, 2, 3]
+        }
+      }
+    },
+    "resources": {
+      "document_store": {
+        "config": {
+          "url": "postgresql://webapp_postgres_user:webapp_postgres_password@webapp-postgres:5432/document_store"
+        }
+      },
+      "raw_documents_repository": {
+        "config": {
+          "url": "http://webapp:8080/documents"
+        }
+      }
+    }
+  },
+  "mode": "default"
+}

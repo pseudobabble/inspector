@@ -1,0 +1,10 @@
+load_from:
+  # Each entry here corresponds to a service in the docker-compose file that exposes user code.
+  - grpc_server:
+      host: dagster-ucd
+      port: 4000
+      location_name: "dagster-ucd"
+  - grpc_server:
+      host: dagster-ucd-document-processing
+      port: 4001
+      location_name: "dagster-ucd-document-processing"

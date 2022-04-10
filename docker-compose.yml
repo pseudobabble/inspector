@@ -1,0 +1,227 @@
+version: "3.9"
+services:
+
+  mlflow-s3:
+    image:  minio/minio:RELEASE.2021-11-24T23-19-33Z
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${AWS_ACCESS_KEY_ID}
+      - MINIO_ROOT_PASSWORD=${AWS_SECRET_ACCESS_KEY}
+    command: server /data --console-address ":9001"
+    networks:
+      - internal
+    volumes:
+      - minio_volume:/data
+
+  mlflow-mysql:
+    image: mysql/mysql-server:5.7.28
+    restart: unless-stopped
+    container_name: mlflow-mysql
+    expose:
+      - "3306"
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_volume:/var/lib/mysql
+    networks:
+      - internal
+
+  mlflow:
+    container_name: mlflow
+    image: mlflow
+    restart: unless-stopped
+    build:
+      context: ./mlflow
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_REGION}
+      - MLFLOW_S3_ENDPOINT_URL=http://mlflow-s3:9000
+    networks:
+      - internal
+    entrypoint: bash ./wait-for-it.sh mlflow-mysql:3306 -t 90 -- mlflow server --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mlflow-mysql:3306/${MYSQL_DATABASE} --default-artifact-root s3://${AWS_BUCKET_NAME}/ -h 0.0.0.0
+
+  create_s3_buckets:
+    image: minio/mc
+    depends_on:
+      - "mlflow-s3"
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set minio http://mlflow-s3:9000 '${AWS_ACCESS_KEY_ID}' '${AWS_SECRET_ACCESS_KEY}') do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc mb minio/mlflow;
+      /usr/bin/mc mb minio/document-store;
+      exit 0;
+      "
+    networks:
+      - internal
+
+    # This service runs the postgres DB used by dagster for run storage, schedule storage,
+  # and event log storage.
+  dagster-postgres:
+    image: postgres:11
+    container_name: dagster-postgres
+    environment:
+      POSTGRES_USER: "postgres_user"
+      POSTGRES_PASSWORD: "postgres_password"
+      POSTGRES_DB: "postgres_db"
+    networks:
+      - internal
+
+  # This service runs the gRPC server that loads your user code, in both dagit
+  # and dagster-daemon. By setting DAGSTER_CURRENT_IMAGE to its own image, we tell the
+  # run launcher to use this same image when launching runs in a new container as well.
+  # Multiple containers like this can be deployed separately - each just needs to run on
+  # its own port, and have its own entry in the workspace.yaml file that's loaded by dagit.
+  #
+  # This 'template' is how you keep your code's execution environment consistent
+  # repo paired with env
+  dagster-ucd:
+    build:
+      context: ./dagster-docker
+      dockerfile: Dockerfile_user_code
+    container_name: dagster-ucd
+    image: dagster-ucd_image
+    restart: always
+    environment:
+      DAGSTER_POSTGRES_USER: "postgres_user"
+      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+      DAGSTER_POSTGRES_DB: "postgres_db"
+      DAGSTER_CURRENT_IMAGE: "dagster-ucd_image"
+    expose:
+      - "4000"
+    networks:
+      - internal
+
+
+  dagster-ucd-document-processing:
+    build:
+      context: ./document_processing_ucd
+      dockerfile: Dockerfile_document_processing_ucd
+    container_name: dagster-ucd-document-processing
+    image: dagster-ucd_image-document-processing
+    restart: always
+    environment:
+      DAGSTER_POSTGRES_USER: "postgres_user"
+      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+      DAGSTER_POSTGRES_DB: "postgres_db"
+      DAGSTER_CURRENT_IMAGE: "dagster-ucd_image-document-processing"
+    expose:
+      - "4001"
+    networks:
+      - internal
+
+  # This service runs dagit, which loads your user code from the user code container.
+  # Since our instance uses the QueuedRunCoordinator, any runs submitted from dagit will be put on
+  # a queue and later dequeued and launched by dagster-daemon.
+  dagster-dagit:
+    build:
+      context: ./dagster-docker
+      dockerfile: Dockerfile_dagster
+    entrypoint:
+      - dagit
+      - -h
+      - "0.0.0.0"
+      - -p
+      - "3000"
+      - -w
+      - workspace.yaml
+    container_name: dagster-dagit
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    environment:
+      DAGSTER_POSTGRES_USER: "postgres_user"
+      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+      DAGSTER_POSTGRES_DB: "postgres_db"
+    volumes: # Make docker client accessible so we can terminate containers from dagit
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - internal
+    depends_on:
+      - dagster-postgres
+      - dagster-ucd
+
+  # This service runs the dagster-daemon process, which is responsible for taking runs
+  # off of the queue and launching them, as well as creating runs from schedules or sensors.
+  dagster-daemon:
+    build:
+      context: ./dagster-docker
+      dockerfile: Dockerfile_dagster
+    entrypoint:
+      - dagster-daemon
+      - run
+    container_name: dagster-daemon
+    restart: on-failure
+    environment:
+      DAGSTER_POSTGRES_USER: "postgres_user"
+      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+      DAGSTER_POSTGRES_DB: "postgres_db"
+    volumes: # Make docker client accessible so we can launch containers using host docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - internal
+    depends_on:
+      - dagster-postgres
+      - dagster-ucd
+
+
+  webapp:
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile_webapp
+    environment:
+      POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
+      POSTGRES_USER: "webapp_postgres_user"
+      POSTGRES_PASSWORD: "webapp_postgres_password"
+      POSTGRES_DB: "webapp_postgres_db"
+    container_name: webapp
+    ports:
+      - 8080:8080
+    networks:
+      - internal
+    depends_on:
+      - webapp-postgres
+      - dagster-dagit
+
+  webapp-postgres:
+    image: postgres:11
+    container_name: webapp-postgres
+    environment:
+      POSTGRES_USER: "webapp_postgres_user"
+      POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
+      POSTGRES_PASSWORD: "webapp_postgres_password"
+      POSTGRES_DB: "webapp_postgres_db"
+    expose:
+      - 5432
+    networks:
+      - internal
+    volumes:
+      - ./webapp/document_store/init-document-store.sh:/docker-entrypoint-initdb.d/1-init-document-store.sh
+
+  nginx-fe:
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile_nginx_ui
+    container_name: nginx-fe
+    ports:
+      - 80:80 # Is this right?
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  db_volume:
+  minio_volume:
+  webapp_postgres:
