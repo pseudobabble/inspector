@@ -1,4 +1,5 @@
 from hashlib import md5
+from typing import List
 
 from infrastructure.dagster_client import DagsterClient
 from .models import Document, RawDocument, MLDocument
@@ -33,19 +34,22 @@ class DocumentBuilder:
 
         return document
 
-    def update_documents_with_ml_document(self, ml_documents: dict):
-        ml_document_ids = [d['id'] for d in ml_documents.items()]
+    def update_documents_with_ml_documents(self, ml_documents: List[dict]):
+        ml_document_ids = [d['id'] for d in ml_documents]
 
         documents = self.document_repository.get_by_ids(ml_document_ids)
         documents_by_id = {d.id: d for d in documents}
 
-        for ml_document_data in ml_documents.items():
+        updated_documents = []
+        for ml_document_data in ml_documents:
             ml_document_id = ml_document_data['id']
+            # TODO: Assuming they have the same id..
             document = documents_by_id.get(ml_document_id)
             if document:
                 del ml_document_data['id']
                 ml_document_data['document_id'] = document.id
-                ml_document = MLDocument.from_dict(ml_document_data)
+                ml_document = MLDocument.from_dict(**ml_document_data)
                 document.ml_documents.append(ml_document)
+                updated_documents.append(document)
 
-        self.document_repository.save_multiple()
+        self.document_repository.save_multiple(updated_documents)
