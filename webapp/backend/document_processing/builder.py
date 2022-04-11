@@ -35,20 +35,27 @@ class DocumentBuilder:
         return document
 
     def update_documents_with_ml_documents(self, ml_documents: List[dict]):
-        ml_document_ids = [d['id'] for d in ml_documents]
+        ml_document_ids = [d['meta']['document_id'] for d in ml_documents]
 
         documents = self.document_repository.get_by_ids(ml_document_ids)
         documents_by_id = {d.id: d for d in documents}
 
         updated_documents = []
         for ml_document_data in ml_documents:
-            ml_document_id = ml_document_data['id']
+            ml_document_id = ml_document_data['meta']['document_id']
             # TODO: Assuming they have the same id..
             document = documents_by_id.get(ml_document_id)
             if document:
-                del ml_document_data['id']
-                ml_document_data['document_id'] = document.id
-                ml_document = MLDocument.from_dict(**ml_document_data)
+                ml_document = MLDocument(
+                    document_id=document.id,
+                    content=ml_document_data['content'],
+                    content_type=ml_document_data['content_type'],
+                    ml_id=ml_document_data['id'],
+                    meta=ml_document_data['meta'],
+                    score=ml_document_data.get('score', None),
+                    embedding=ml_document_data.get('embedding', None),
+                    id_hash_keys=ml_document_data.get('id_hash_keys', None),
+                )
                 document.ml_documents.append(ml_document)
                 updated_documents.append(document)
 

@@ -14,6 +14,8 @@ api.add_resource(
     Documents,
     *Documents.routes
 )
+api.add_resource(Documents, "/documents/get_by_ids", endpoint="get_by_ids", methods=['GET'])
+api.add_resource(Documents, "/documents/update_ml_documents", endpoint="update_ml_documents", methods=['PATCH'])
 api.add_resource(Trigger, *Trigger.routes)
 
 if __name__ == '__main__':

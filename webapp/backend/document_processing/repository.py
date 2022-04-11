@@ -35,7 +35,7 @@ class DocumentRepository(SqlAlchemyAdaptor):
 
     def save_multiple(self, documents: List[Document]):
         for document in documents:
-            if not isinstance(entity, self.entity):
+            if not isinstance(document, self.entity):
                 raise UnexpectedEntityException(
                     '{} is not a {}'.format(
                         entity.__class__.__name__,

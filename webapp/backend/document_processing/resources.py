@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 import flask
 from flask_restful import Resource
@@ -11,6 +12,8 @@ from .schemata import DocumentSchema
 from .repository import DocumentRepository
 from .models import RawDocument
 
+import logging
+logging.basicConfig(filename='example.log')
 
 class Documents(Resource):
     '''
@@ -47,7 +50,13 @@ class Documents(Resource):
         :param latest: str
         :return: dict
         """
-        documents = self.document_repository.get_all()
+        request_args = flask.request.args
+        if request_args.get('ids'):
+            self.document_schema.many = True
+            documents = self.document_repository.get_by_ids(json.loads(request_args['ids']))
+        else:
+            documents = self.document_repository.get_all()
+
         documents_response = self.document_schema.dump(documents)
 
         return documents_response
@@ -96,14 +105,14 @@ class Documents(Resource):
             return response_documents
 
     @transaction
-    def update_ml_documents(self):
+    def patch(self):
         """
         Update Documents by receiving POST requests with data specified as JSON
         in the request body
         TODO: needs to be made into a proper resource
         :return: dict
         """
-        data_dict = flask.request.get_json()
+        data_dict = json.loads(flask.request.get_json())
         try:
             documents = self.document_builder.update_documents_with_ml_documents(data_dict)
             response = {'success': 200}
@@ -119,7 +128,7 @@ class Trigger(Resource):
     routes = ['/trigger']
     def post(self):
         """dev method to trigger runs"""
-        config = request.get_json()
+        config = flask.request.get_json()
         client = DagsterClient()
 
         client.trigger_run(
