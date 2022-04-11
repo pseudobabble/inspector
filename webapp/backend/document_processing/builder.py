@@ -2,7 +2,7 @@ from hashlib import md5
 from typing import List
 
 from infrastructure.dagster_client import DagsterClient
-from .models import Document, RawDocument, MLDocument
+from .models import Document, MLDocument
 from .repository import DocumentRepository
 
 
@@ -18,8 +18,8 @@ class DocumentBuilder:
     ) -> None:
         self.document_repository = document_repository
 
-    def build(self, document: RawDocument) -> None:
-        content_hash = str(md5(document.content.encode('utf-8')))
+    def build(self, document: dict) -> None:
+        content_hash = str(md5(document['content'].encode('utf-8')))
         existing_document = self.document_repository.get_by_hash(content_hash)
 
         if existing_document:
@@ -28,7 +28,7 @@ class DocumentBuilder:
             )
 
         document = Document(
-            filename=document.filename, raw_content=document.content, content_hash=content_hash
+            filename=document['filename'], raw_content=document['content'], content_hash=str(content_hash)
         )
         self.document_repository.save(document)
 
@@ -50,7 +50,6 @@ class DocumentBuilder:
                     document_id=document.id,
                     content=ml_document_data['content'],
                     content_type=ml_document_data['content_type'],
-                    ml_id=ml_document_data['id'],
                     meta=ml_document_data['meta'],
                     score=ml_document_data.get('score', None),
                     embedding=ml_document_data.get('embedding', None),
@@ -60,3 +59,5 @@ class DocumentBuilder:
                 updated_documents.append(document)
 
         self.document_repository.save_multiple(updated_documents)
+
+        return updated_documents

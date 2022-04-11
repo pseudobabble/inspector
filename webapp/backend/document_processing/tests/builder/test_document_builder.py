@@ -67,22 +67,24 @@ class TestDocumentBuilder(unittest.TestCase):
 
         ml_documents = [
             {
+                'id': 'ab28128e-4a33-40f1-ae61-b3658cb461dc',
                 'content': 'abc123',
                 'content_type': 'text',
-                'id': 1,
-                'meta': {},
-                'score': 0.5,
-                'embedding': None,
-                'id_hash_keys': ['a', 'b', 'c']
+                'meta': {
+                    'document_id': 1,
+                    'filename': 'test.py',
+                    '_split_id': 0
+                }
             },
             {
+                'id': 'ab28128e-4a33-40f1-ae61-b3658cb461dc',
                 'content': 'abc123',
                 'content_type': 'text',
-                'id': 2,
-                'meta': {},
-                'score': 0.5,
-                'embedding': None,
-                'id_hash_keys': ['a', 'b', 'c']
+                'meta': {
+                    'document_id': 2,
+                    'filename': 'test.py',
+                    '_split_id': 0
+                }
             }
         ]
 
@@ -91,17 +93,15 @@ class TestDocumentBuilder(unittest.TestCase):
 
         mock_repository_get_by_ids.assert_called_with([1, 2])
         mock_repository.save_multiple.assert_called_with([return_document])
-        ml_document_created = MLDocument.from_dict(
-            **{
-                'content': 'abc123',
-                'content_type': 'text',
-                'document_id': 1,
-                'meta': {},
-                'score': 0.5,
-                'embedding': None,
-                'id_hash_keys': ['a', 'b', 'c']
-            }
-        )
+        ml_document_created = MLDocument(
+                    document_id=1,
+                    content='abc123',
+                    content_type='text',
+                    ml_id='ab28128e-4a33-40f1-ae61-b3658cb461dc',
+                    meta={'meta': {'document_id': 2, 'filename': 'test.py', '_split_id': 0}},                    score=None,
+                    embedding=None,
+                    id_hash_keys=None,
+                )
 
         assert return_document.ml_documents[0].content == ml_document_created.content
         assert return_document.ml_documents[0].document_id == ml_document_created.document_id

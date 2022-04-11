@@ -6,7 +6,9 @@ from document_processing.resources import Documents
 
 class TestDocuments(unittest.TestCase):
 
-    def test_get(self):
+    @patch('document_processing.resources.flask')
+    def test_get_all(self, mock_flask):
+        mock_flask.request.args = {}
         return_document = Document(
             id=1,
             filename='test_file.py',
@@ -27,7 +29,7 @@ class TestDocuments(unittest.TestCase):
 
         assert result == 'DUMP'
         mock_repository_get_all.assert_called()
-        mock_schema_dump.assert_called_with([return_document])
+        mock_schema_dump.assert_called_with([return_document], many=False)
 
     @patch('document_processing.resources.flask')
     def test_get_by_ids(self, mock_flask):
@@ -113,8 +115,18 @@ class TestDocuments(unittest.TestCase):
         mock_schema_dump.assert_called_with(return_document)
 
     @patch('document_processing.resources.flask')
-    def test_update_ml_documents(self, mock_flask):
-        mock_flask.request.get_json.return_value = {'filename': 'test.py', 'content': 'abc123'}
+    def test_patch(self, mock_flask):
+        response_json = [{
+            'id': 'ab28128e-4a33-40f1-ae61-b3658cb461dc',
+            'content': 'abc123',
+            'content_type': 'text',
+            'meta': {
+                'document_id': 1,
+                'filename': 'test.py',
+                '_split_id': 0
+            }
+        }]
+        mock_flask.request.get_json.return_value = response_json
 
         return_document = Document(
             id=1,
@@ -128,10 +140,10 @@ class TestDocuments(unittest.TestCase):
             document_builder=mock_builder
         )
 
-        result = documents_resource.update_ml_documents()
+        result = documents_resource.patch()
 
         assert result == {'success': 200}
-        mock_builder_update_documents_with_ml_documents.assert_called_with({'filename': 'test.py', 'content': 'abc123'})
+        mock_builder_update_documents_with_ml_documents.assert_called_with(response_json)
 
 
 if __name__ == '__main__':

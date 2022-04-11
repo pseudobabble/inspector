@@ -104,8 +104,8 @@ services:
 
   dagster-ucd-document-processing:
     build:
-      context: ./document_processing_ucd
-      dockerfile: Dockerfile_document_processing_ucd
+      context: ./webapp/backend/document_processing
+      dockerfile: ./document_processing_ucd/Dockerfile_document_processing_ucd
     container_name: dagster-ucd-document-processing
     image: dagster-ucd_image-document-processing
     restart: always

@@ -30,8 +30,7 @@ class DocumentRepository(SqlAlchemyAdaptor):
         return self.session.query(self.entity).filter(self.entity.content_hash==content_hash).first()
 
     def get_by_ids(self, document_ids: List[int]):
-        for document_id in document_ids:
-            return self.session.query(self.entity).filter(self.entity.id == func.any(document_ids))
+        return self.session.query(self.entity).filter(self.entity.id.in_(document_ids)).all()
 
     def save_multiple(self, documents: List[Document]):
         for document in documents:

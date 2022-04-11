@@ -14,11 +14,6 @@ import numpy as np
 from infrastructure import repository
 
 
-@dataclass(frozen=True, eq=True, repr=True, order=True)
-class RawDocument:
-    filename: str
-    content: str
-
 class Document(repository.Base):
     __tablename__ = 'documents'
 
@@ -47,17 +42,12 @@ class NumpyArray(TypeDecorator):
 class MLDocument(repository.Base):
     __tablename__ = "ml_documents"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(UUIDType, primary_key=True, default=uuid.uuid4) # originates in the pipeline
     document_id = Column(Integer, ForeignKey("documents.id"))
     document = relationship("Document", back_populates="ml_documents")
     content = Column(String) # could be df?
     content_type = Column(String)
-    ml_id = Column(String)
     meta = Column(JSONType)
     score = Column(Float, nullable=True)
     embedding = Column(NumpyArray, nullable=True)
     id_hash_keys = Column(ARRAY(String), nullable=True)
-
-    @classmethod
-    def from_dict(cls, **kwargs):
-        return cls(**kwargs)
