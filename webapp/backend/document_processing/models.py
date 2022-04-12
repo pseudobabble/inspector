@@ -23,31 +23,9 @@ class Document(repository.Base):
     content_hash = Column(String)
     ml_documents = relationship("MLDocument")
 
-
-class NumpyArray(TypeDecorator):
-
-    impl = types.PickleType
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            value = value.dumps()
-        return value
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            value = pickle.loads(value)
-        return value
-
-
 class MLDocument(repository.Base):
     __tablename__ = "ml_documents"
 
     id = Column(UUIDType, primary_key=True, default=uuid.uuid4) # originates in the pipeline
     document_id = Column(Integer, ForeignKey("documents.id"))
     document = relationship("Document", back_populates="ml_documents")
-    content = Column(String) # could be df?
-    content_type = Column(String)
-    meta = Column(JSONType)
-    score = Column(Float, nullable=True)
-    embedding = Column(NumpyArray, nullable=True)
-    id_hash_keys = Column(ARRAY(String), nullable=True)

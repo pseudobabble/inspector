@@ -69,6 +69,7 @@ class Documents(Resource):
         raw_document = self.raw_document_schema.load(data_dict)
         try:
             document = self.document_builder.build(raw_document)
+
             response = self.document_schema.dump(document)
         except Exception as e: # TODO
             raise e
@@ -96,6 +97,19 @@ class Documents(Resource):
             raise e
 
         return response
+
+class Upload(Resource):
+
+    routes = ["documents/upload"]
+
+    def post(self):
+        uploaded_files = flask.request.files.getlist("file")
+        file_data = [
+            {'filename': f.filename, 'content': f.read()}
+            for f in uploaded_files
+        ]
+
+        return {'success': 200}
 
 class Trigger(Resource):
     routes = ['/trigger']
