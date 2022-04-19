@@ -1,3 +1,4 @@
+
 from dataclasses import dataclass
 from typing import Union, Literal, Dict, Optional, Any, List
 import uuid
@@ -26,6 +27,7 @@ class Document(repository.Base):
 class MLDocument(repository.Base):
     __tablename__ = "ml_documents"
 
-    id = Column(UUIDType, primary_key=True, default=uuid.uuid4) # originates in the pipeline
+    id = Column(Integer, primary_key=True)
+    document_store_id = Column(UUIDType, default=uuid.uuid4)
     document_id = Column(Integer, ForeignKey("documents.id"))
     document = relationship("Document", back_populates="ml_documents")

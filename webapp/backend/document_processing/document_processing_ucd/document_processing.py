@@ -41,6 +41,7 @@ class RawDocumentsRepository:
         return raw_documents
 
     def update_documents(self, ml_documents: List[MLDocument]):
+        # TODO: do we want to keep sending the whole document, or just ids?
         update_response = self.client.patch(self.url, json=self.pipeline_to_document_schema.dump(ml_documents, many=True))
 
         return update_response
@@ -55,7 +56,6 @@ def document_store(init_context):
         url=init_context.resource_config.get('url')
     )
 
-# TODO: spec this up to be generalized - take a file converter, params, etc
 @op(
     config_schema={"document_ids": Array(int)},
     required_resource_keys={"document_store", "raw_documents_repository"}
@@ -72,6 +72,7 @@ def preprocess_docs(context):
     raw_documents = raw_documents_repository.get_by_ids(document_ids)
     logger.info("Found %s documents to process: %s", len(raw_documents), raw_documents)
 
+    # TODO: extract the preprocessor to a configurable resource
     preprocessor = PreProcessor(
         clean_empty_lines=True,
         clean_whitespace=True,
@@ -88,7 +89,6 @@ def preprocess_docs(context):
     logger.info("Update response: %s", response.json())
 
     return preprocessed_docs
-
 
 
 @job(
