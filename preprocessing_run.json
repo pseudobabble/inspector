@@ -6,7 +6,7 @@
     "ops": {
       "preprocess_docs": {
         "config": {
-          "document_ids": [1, 2, 3]
+          "document_ids": [1, 2, 3, 4, 5, 6]
         }
       }
     },

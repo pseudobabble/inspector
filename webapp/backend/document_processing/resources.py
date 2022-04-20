@@ -70,7 +70,9 @@ class Documents(Resource):
         :return: dict
         """
         data_dict = flask.request.get_json()
-        raw_document = self.raw_document_schema.load(data_dict)
+        many = isinstance(data_dict, list)
+        raw_document = self.raw_document_schema.loads(data_dict, many=many) # TODO:
+        #raw_document = json.loads(data_dict)
         try:
             document = self.document_builder.build(raw_document)
 
@@ -90,7 +92,6 @@ class Documents(Resource):
         TODO: needs to be made into a proper resource
         :return: dict
         """
-        import pdb;pdb.set_trace()
         data_dict = flask.request.get_json()
         many = isinstance(data_dict, list) # TODO: fix naming here
         ml_document_data = self.pipeline_to_ml_document_schema.load(data_dict, many=many)

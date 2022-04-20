@@ -19,7 +19,7 @@ class DocumentBuilder:
         self.document_repository = document_repository
 
     def build(self, document: dict) -> None:
-        content_hash = str(md5(document['content'].encode('utf-8')))
+        content_hash = md5(document['content'].encode('utf-8')).hexdigest()
         existing_document = self.document_repository.get_by_hash(content_hash)
 
         if existing_document:
@@ -35,7 +35,7 @@ class DocumentBuilder:
         return document
 
     def update_documents_with_ml_documents(self, ml_documents: List[dict]):
-        ml_document_ids = [d['meta']['document_id'] for d in ml_documents]
+        ml_document_ids = [d['meta']['document_id'] for d in ml_documents] # TODO: deduplicate them
 
         documents = self.document_repository.get_by_ids(ml_document_ids)
         documents_by_id = {d.id: d for d in documents}
