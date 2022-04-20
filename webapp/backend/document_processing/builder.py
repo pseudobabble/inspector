@@ -46,7 +46,7 @@ class DocumentBuilder:
             document = documents_by_id.get(document_id)
             if document:
                 ml_document = MLDocument(
-                    document_store_id = ml_document_data['id']
+                    document_store_id = ml_document_data['id'],
                     document_id = document.id,
                     document = document
                 )

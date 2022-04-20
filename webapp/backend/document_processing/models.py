@@ -28,6 +28,6 @@ class MLDocument(repository.Base):
     __tablename__ = "ml_documents"
 
     id = Column(Integer, primary_key=True)
-    document_store_id = Column(UUIDType, default=uuid.uuid4)
+    document_store_id = Column(String)
     document_id = Column(Integer, ForeignKey("documents.id"))
     document = relationship("Document", back_populates="ml_documents")

@@ -1,5 +1,7 @@
 from datetime import datetime
 import json
+import logging
+import sys
 
 import flask
 from flask_restful import Resource
@@ -10,6 +12,15 @@ from infrastructure.repository import transaction
 from .builder import DocumentBuilder
 from .schemata import Document, RawDocument, MLDocument, DocumentToPipeline
 from .repository import DocumentRepository
+
+logger = logging.getLogger('mylogger')
+
+logger.setLevel(logging.DEBUG) # set logger level
+logFormatter = logging.Formatter\
+("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
+consoleHandler = logging.StreamHandler(sys.stdout) #set streamhandler to stdout
+consoleHandler.setFormatter(logFormatter)
+logger.addHandler(consoleHandler)
 
 
 class Documents(Resource):
@@ -48,11 +59,12 @@ class Documents(Resource):
         if request_args.get('ids'):
             document_ids = json.loads(request_args['ids'])
             documents = self.document_repository.get_by_ids(document_ids)
-            many = len(documents) > 1
+            many = isinstance(documents, list)
+            logger.error(document_ids, document, many)
             documents_response = self.document_to_pipeline_schema.dump(documents, many=many)
         else:
             documents = self.document_repository.get_all()
-            many = len(documents) > 1
+            many = isinstance(documents, list)
             documents_response = self.document_schema.dump(documents, many=many)
 
 
@@ -88,8 +100,8 @@ class Documents(Resource):
         :return: dict
         """
         data_dict = flask.request.get_json()
-        many = len(data_dict) > 1
-        #ml_document_data = self.pipeline_to_ml_document_schema.load(data_dict, many=many)
+        many = isinstance(data_dict, list) > 1 # TODO: fix naming here
+        ml_document_data = self.pipeline_to_ml_document_schema.load(data_dict, many=many)
         try:
             documents = self.document_builder.update_documents_with_ml_documents(data_dict)
             response = self.document_schema.dump(documents, many=many)

@@ -42,7 +42,10 @@ class RawDocumentsRepository:
 
     def update_documents(self, ml_documents: List[MLDocument]):
         # TODO: do we want to keep sending the whole document, or just ids?
-        update_response = self.client.patch(self.url, json=self.pipeline_to_document_schema.dump(ml_documents, many=True))
+        update_response = self.client.patch(
+            self.url,
+            json=self.pipeline_to_document_schema.dump(ml_documents, many=True)
+        )
 
         return update_response
 
@@ -82,6 +85,9 @@ def preprocess_docs(context):
         split_respect_sentence_boundary=True,
     )
     preprocessed_docs = preprocessor.process(raw_documents)
+    # TODO: subclass preprocessor/document_store and do this inside
+    for doc in preprocessed_docs:
+        doc['id'] = str(uuid4())
     document_store.write_documents(preprocessed_docs)
     logger.info("Updating documents with %s MLDocuments: %s", len(preprocessed_docs), preprocessed_docs)
 
