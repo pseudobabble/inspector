@@ -192,6 +192,8 @@ services:
     depends_on:
       - webapp-postgres
       - dagster-dagit
+    stdin_open: true
+    tty: true
 
   webapp-postgres:
     image: postgres:11

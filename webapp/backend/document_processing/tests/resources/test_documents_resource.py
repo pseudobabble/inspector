@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from document_processing.models import Document, RawDocument
+from document_processing.models import Document
 from document_processing.resources import Documents
 
 class TestDocuments(unittest.TestCase):

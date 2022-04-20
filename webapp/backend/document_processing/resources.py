@@ -1,7 +1,7 @@
 from datetime import datetime
 import json
 import logging
-import sys
+from sys import stdout
 
 import flask
 from flask_restful import Resource
@@ -10,17 +10,8 @@ from marshmallow import Schema
 from infrastructure.dagster_client import DagsterClient
 from infrastructure.repository import transaction
 from .builder import DocumentBuilder
-from .schemata import Document, RawDocument, MLDocument, DocumentToPipeline
+from .schemata import Document, RawDocument, MLDocument, DocumentToPipeline, PipelineToMLDocument
 from .repository import DocumentRepository
-
-logger = logging.getLogger('mylogger')
-
-logger.setLevel(logging.DEBUG) # set logger level
-logFormatter = logging.Formatter\
-("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
-consoleHandler = logging.StreamHandler(sys.stdout) #set streamhandler to stdout
-consoleHandler.setFormatter(logFormatter)
-logger.addHandler(consoleHandler)
 
 
 class Documents(Resource):
@@ -39,13 +30,15 @@ class Documents(Resource):
             document_schema: Schema = Document(),
             document_repository: DocumentRepository = DocumentRepository(),
             raw_document_schema: RawDocument = RawDocument(),
-            document_to_pipeline_schema: DocumentToPipeline = DocumentToPipeline()
+            document_to_pipeline_schema: DocumentToPipeline = DocumentToPipeline(),
+            pipeline_to_ml_document_schema: PipelineToMLDocument = PipelineToMLDocument()
     ):
         self.document_builder = document_builder
         self.document_schema = document_schema
         self.document_repository = document_repository
         self.raw_document_schema = raw_document_schema
         self.document_to_pipeline_schema = document_to_pipeline_schema
+        self.pipeline_to_ml_document_schema = pipeline_to_ml_document_schema
 
     def get(self) -> dict:
         """
@@ -60,7 +53,6 @@ class Documents(Resource):
             document_ids = json.loads(request_args['ids'])
             documents = self.document_repository.get_by_ids(document_ids)
             many = isinstance(documents, list)
-            logger.error(document_ids, document, many)
             documents_response = self.document_to_pipeline_schema.dump(documents, many=many)
         else:
             documents = self.document_repository.get_all()
@@ -84,7 +76,6 @@ class Documents(Resource):
 
             response = self.document_schema.dump(document)
         except Exception as e: # TODO
-            raise e
             response = {
                 f"Exception: {e}": 400
             }
@@ -99,14 +90,12 @@ class Documents(Resource):
         TODO: needs to be made into a proper resource
         :return: dict
         """
+        import pdb;pdb.set_trace()
         data_dict = flask.request.get_json()
-        many = isinstance(data_dict, list) > 1 # TODO: fix naming here
+        many = isinstance(data_dict, list) # TODO: fix naming here
         ml_document_data = self.pipeline_to_ml_document_schema.load(data_dict, many=many)
-        try:
-            documents = self.document_builder.update_documents_with_ml_documents(data_dict)
-            response = self.document_schema.dump(documents, many=many)
-        except Exception as e: # TODO
-            raise e
+        documents = self.document_builder.update_documents_with_ml_documents(data_dict)
+        response = self.document_schema.dump(documents, many=many)
 
         return response
 

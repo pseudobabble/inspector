@@ -4,6 +4,7 @@ from dataclasses import dataclass, asdict
 import json
 import logging
 from uuid import uuid4
+from hashlib import md5
 
 import requests
 import nltk
@@ -73,7 +74,11 @@ def preprocess_docs(context):
     logger.info("Processing documents for ids %s", document_ids)
 
     raw_documents = raw_documents_repository.get_by_ids(document_ids)
-    logger.info("Found %s documents to process: %s", len(raw_documents), raw_documents)
+    logger.info(
+        "Found %s documents to process: %s",
+        len(raw_documents),
+        [d['document_id'] for d in raw_documents]
+    )
 
     # TODO: extract the preprocessor to a configurable resource
     preprocessor = PreProcessor(
@@ -82,14 +87,19 @@ def preprocess_docs(context):
         clean_header_footer=False,
         split_by="word",
         split_length=100,
-        split_respect_sentence_boundary=True,
+        split_respect_sentence_boundary=True
     )
     preprocessed_docs = preprocessor.process(raw_documents)
-    # TODO: subclass preprocessor/document_store and do this inside
+
+    # TODO: Sort this out
     for doc in preprocessed_docs:
-        doc['id'] = str(uuid4())
+        doc['id'] = md5(doc['content'])
+
     document_store.write_documents(preprocessed_docs)
-    logger.info("Updating documents with %s MLDocuments: %s", len(preprocessed_docs), preprocessed_docs)
+    logger.info(
+        "Updating documents with %s MLDocuments",
+        len(preprocessed_docs)
+    )
 
     response = raw_documents_repository.update_documents(preprocessed_docs)
     logger.info("Update response: %s", response.json())
