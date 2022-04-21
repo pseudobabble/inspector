@@ -1,1 +1,1 @@
-from .resources import Documents, Trigger
+from .resources import Documents, Trigger, Upload
