@@ -2,7 +2,7 @@
 This module contains classes for parsing various file formats into more useful forms,
 usually text extraction, maybe xml conversion, etc
 """
-from typing import Dict, List, Any, Union
+from typing import Dict, List, Any, Union, Optional
 from abc import abstractmethod
 import shlex
 import subprocess
@@ -30,15 +30,14 @@ class FileParser:
     allowed_types = NotImplementedError()
 
     @abstractmethod
-    def process(temporary_file: NamedTemporaryFile) -> str:
+    def process(self, temporary_file: NamedTemporaryFile) -> str:
         raise NotImplementedError()
 
-    def parse(file_datum: Dict[str, Any]) -> ParsedFile:
+    def parse(self, file_datum: Dict[str, Any]) -> ParsedFile:
 
         content = file_datum['content']
 
-        original_filename_path = Path(file_datum['filename'])
-        original_filename_stem = original_filename_path.stem
+        original_filename_stem = Path(file_datum['filename']).stem
 
         with NamedTemporaryFile() as tf:
             tf.write(content)
@@ -52,7 +51,7 @@ class FileParser:
 
             return parsed_file
 
-    def _parse_temp_file(result_filename: str, filename: str):
+    def _parse_temp_file(self, result_filename: str, filename: str):
         with open(result_filename, 'r') as tmp_file:
             parsed_file = ParsedFile(**{
                 'filename': filename,
@@ -67,12 +66,12 @@ class WordProcessorXmlParser(FileParser):
 
     allowed_types = ['docx', 'doc', 'odt']
 
-    def process(temporary_file: NamedTemporaryFile) -> str:
+    def process(self, temporary_file: NamedTemporaryFile) -> str:
         result = subprocess.run(
-            shlex.split(f"soffice --headless --convert-to fodt:'OpenDocument Text Flat XML' {tf.temporary_file}")
+            shlex.split(f"soffice --headless --convert-to fodt:'OpenDocument Text Flat XML' {temporary_file.name}")
         )
 
-        result_filename = result.args[4] + '.fodt'
+        result_filename = result.args[4].split('.')[0] + '.fodt'
 
         return result_filename
 
@@ -81,9 +80,9 @@ class WordProcessorTextParser(FileParser):
 
     allowed_types = ['docx', 'doc', 'odt']
 
-    def process(temporary_file: NamedTemporaryFile) -> str:
+    def process(self, temporary_file: NamedTemporaryFile) -> str:
         result = subprocess.run(
-            shlex.split(f"soffice --headless --convert-to txt:Text {tf.temporary_file}'")
+            shlex.split(f"soffice --headless --convert-to txt:Text {temporary_file.name}'")
         )
 
         result_filename = result.args[4] + '.txt'
@@ -96,10 +95,10 @@ class ParserCoordinator:
     def __init__(self, parsers: Optional[List[FileParser]] = None):
         self.parsers = parsers or [WordProcessorXmlParser(), WordProcessorTextParser()]
 
-    def set_parser(parser: FileParser) -> None:
+    def set_parser(self, parser: FileParser) -> None:
         self.parsers.append(parser())
 
-    def parse(uploaded_file_data: List[dict]) -> List[ParsedFileCollection]:
+    def parse(self, uploaded_file_data: List[dict]) -> List[ParsedFileCollection]:
         parsed_file_collections = []
         for datum in uploaded_file_data:
             parsed_file_collection = self._add_original_file_data({}, datum)
@@ -117,9 +116,9 @@ class ParserCoordinator:
 
         return parsed_file_collections
 
-    def _add_original_file_data(parsed_file_collection_data: dict, datum: dict):
+    def _add_original_file_data(self, parsed_file_collection_data: dict, datum: dict):
         original_file_key = Path(datum['filename']).suffix.replace('.', '')
         original_file_data = {**datum, "file_extension": original_file_key}
-        parsed_file_collection[original_file_key] = ParsedFile(**original_file_data)
+        parsed_file_collection_data[original_file_key] = ParsedFile(**original_file_data)
 
-        return parsed_file_collection
+        return parsed_file_collection_data
