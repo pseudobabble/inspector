@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import logging
 from sys import stdout
+from hashlib import md5
 
 import flask
 from flask_restful import Resource
@@ -12,6 +13,8 @@ from infrastructure.repository import transaction
 from .builder import DocumentBuilder
 from .schemata import Document, RawDocument, MLDocument, DocumentToPipeline, PipelineToMLDocument
 from .repository import DocumentRepository
+from .parsers import ParserCoordinator
+
 
 
 class Documents(Resource):
@@ -71,8 +74,7 @@ class Documents(Resource):
         """
         data_dict = flask.request.get_json()
         many = isinstance(data_dict, list)
-        raw_document = self.raw_document_schema.loads(data_dict, many=many) # TODO:
-        #raw_document = json.loads(data_dict)
+        raw_document = self.raw_document_schema.loads(data_dict, many=many)
         try:
             document = self.document_builder.build(raw_document)
 
@@ -100,9 +102,22 @@ class Documents(Resource):
 
         return response
 
+
 class Upload(Resource):
 
-    routes = ["documents/upload"]
+    routes = ["/documents/upload"]
+
+    def __init__(
+            self,
+            document_builder: DocumentBuilder = DocumentBuilder(),
+            document_repository: DocumentRepository = DocumentRepository(),
+            parser_coordinator: ParserCoordinator = ParserCoordinator(),
+            blob_client: BlobClient = BlobClient()
+    ):
+        self.document_builder = document_builder
+        self.document_repository = document_repository
+        self.parser_coordinator = parser_coordinator
+        self.blob_client = blob_client
 
     def post(self):
         uploaded_files = flask.request.files.getlist("file")
@@ -111,7 +126,19 @@ class Upload(Resource):
             for f in uploaded_files
         ]
 
+        parsed_file_collections = self.parser_coordinator.parse(file_data)
+
+        for parsed_file_collection in parsed_file_collections:
+            blob_key = md5(parsed_file_collection.original.content).hexdigest()
+            self.blob_client.put(blob_key, parsed_file_collection.dict())
+
+            document = self.document_builder.build({
+                'filename': parsed_file_collection.original.filename,
+                'content': parsed_file_collection.original.content
+            })
+
         return {'success': 200}
+
 
 class Trigger(Resource):
     routes = ['/trigger']

@@ -12,7 +12,7 @@ from haystack.document_stores import SQLDocumentStore
 from haystack.nodes import TextConverter, PDFToTextConverter, \
     DocxToTextConverter, PreProcessor, TfidfRetriever
 from haystack.schema import Document as MLDocument
-from dagster import job, op, graph, resource, In, Array
+from dagster import repository, job, op, graph, resource, In, Array
 
 from schemata import PipelineToMLDocument
 
@@ -167,3 +167,10 @@ def preprocess_documents():
 def answer_query():
     candidates = retriever()
     answers = reader(candidates)
+
+@repository
+def document_processing():
+    return [
+        preprocess_documents,
+        answer_query,
+    ]
