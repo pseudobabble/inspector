@@ -1,0 +1,12 @@
+flask
+sqlalchemy
+marshmallow
+flask-restful
+psycopg2-binary
+pandas
+sqlalchemy-utils
+dagster==0.14.0
+dagster_graphql==0.14.0
+markupsafe==2.0.1
+pydantic
+minio
