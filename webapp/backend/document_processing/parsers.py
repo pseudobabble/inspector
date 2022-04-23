@@ -8,6 +8,7 @@ import shlex
 import subprocess
 from tempfile import NamedTemporaryFile
 from pathlib import Path
+import os
 
 from pydantic import BaseModel
 
@@ -20,7 +21,7 @@ class ParsedFile(BaseModel):
 
 class ParsedFileCollection(BaseModel):
     fodt: ParsedFile
-    text: ParsedFile
+    txt: ParsedFile
     original: ParsedFile
 
 
@@ -56,7 +57,7 @@ class FileParser:
             parsed_file = ParsedFile(**{
                 'filename': filename,
                 'content': tmp_file.read(),
-                'file_extension': result_filename_extension
+                'file_extension': Path(result_filename).suffix.replace('.', '')
             })
 
         return parsed_file
@@ -71,9 +72,10 @@ class WordProcessorXmlParser(FileParser):
             shlex.split(f"soffice --headless --convert-to fodt:'OpenDocument Text Flat XML' {temporary_file.name}")
         )
 
-        result_filename = result.args[4].split('.')[0] + '.fodt'
+        result_filename = Path(result.args[4].split('.')[0] + '.fodt').name
+        new_path = Path('/backend').joinpath(result_filename)
 
-        return result_filename
+        return new_path
 
 
 class WordProcessorTextParser(FileParser):
@@ -82,12 +84,13 @@ class WordProcessorTextParser(FileParser):
 
     def process(self, temporary_file: NamedTemporaryFile) -> str:
         result = subprocess.run(
-            shlex.split(f"soffice --headless --convert-to txt:Text {temporary_file.name}'")
+            shlex.split(f'soffice --headless --convert-to txt:Text {temporary_file.name}')
         )
 
-        result_filename = result.args[4] + '.txt'
+        result_filename = Path(result.args[4].split('.')[0] + '.txt').name
+        new_path = Path('/backend').joinpath(result_filename)
 
-        return result_filename
+        return new_path
 
 
 class ParserCoordinator:
@@ -117,8 +120,8 @@ class ParserCoordinator:
         return parsed_file_collections
 
     def _add_original_file_data(self, parsed_file_collection_data: dict, datum: dict):
-        original_file_key = Path(datum['filename']).suffix.replace('.', '')
-        original_file_data = {**datum, "file_extension": original_file_key}
-        parsed_file_collection_data[original_file_key] = ParsedFile(**original_file_data)
+        original_file_extension = Path(datum['filename']).suffix.replace('.', '')
+        original_file_data = {**datum, "file_extension": original_file_extension}
+        parsed_file_collection_data['original'] = ParsedFile(**original_file_data)
 
         return parsed_file_collection_data

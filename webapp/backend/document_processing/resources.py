@@ -8,12 +8,14 @@ import flask
 from flask_restful import Resource
 from marshmallow import Schema
 
-from infrastructure.dagster_client import DagsterClient
+#from infrastructure.dagster_client import DagsterClient
 from infrastructure.repository import transaction
+from infrastructure.blob_client import BlobClient, MinioBlobClient
 from .builder import DocumentBuilder
 from .schemata import Document, RawDocument, MLDocument, DocumentToPipeline, PipelineToMLDocument
 from .repository import DocumentRepository
 from .parsers import ParserCoordinator
+
 
 
 
@@ -112,13 +114,14 @@ class Upload(Resource):
             document_builder: DocumentBuilder = DocumentBuilder(),
             document_repository: DocumentRepository = DocumentRepository(),
             parser_coordinator: ParserCoordinator = ParserCoordinator(),
-            blob_client: BlobClient = BlobClient()
+            blob_client: BlobClient = MinioBlobClient()
     ):
         self.document_builder = document_builder
         self.document_repository = document_repository
         self.parser_coordinator = parser_coordinator
         self.blob_client = blob_client
 
+    @transaction
     def post(self):
         uploaded_files = flask.request.files.getlist("file")
         file_data = [
@@ -140,17 +143,17 @@ class Upload(Resource):
         return {'success': 200}
 
 
-class Trigger(Resource):
-    routes = ['/trigger']
-    def post(self):
-        """dev method to trigger runs"""
-        config = flask.request.get_json()
-        client = DagsterClient()
+# class Trigger(Resource):
+#     routes = ['/trigger']
+#     def post(self):
+#         """dev method to trigger runs"""
+#         config = flask.request.get_json()
+#         client = DagsterClient()
 
-        client.trigger_run(
-            job_name=config['job_name'],
-            repository_location_name=config['repository_location_name'],
-            repository_name=config['repository_name'],
-            run_config=config['run_config'],
-            mode=config['mode']
-        )
+#         client.trigger_run(
+#             job_name=config['job_name'],
+#             repository_location_name=config['repository_location_name'],
+#             repository_name=config['repository_name'],
+#             run_config=config['run_config'],
+#             mode=config['mode']
+#         )
