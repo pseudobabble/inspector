@@ -1,7 +1,6 @@
 from hashlib import md5
 from typing import List
 
-from infrastructure.dagster_client import DagsterClient
 from .models import Document, MLDocument
 from .repository import DocumentRepository
 
