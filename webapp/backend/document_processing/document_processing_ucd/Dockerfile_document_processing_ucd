@@ -17,6 +17,7 @@ WORKDIR /opt/dagster/app
 
 COPY document_processing_ucd/document_processing.py /opt/dagster/app
 COPY schemata.py /opt/dagster/app
+COPY infrastructure/blob_client.py /opt/dagster/app
 
 # Run dagster gRPC server on port 4000
 
