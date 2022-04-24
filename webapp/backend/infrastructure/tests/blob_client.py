@@ -8,9 +8,15 @@ class TestMinioBlobClient(unittest.TestCase):
     def test_get(self):
         mock_minio = Mock()
 
+        original_value = {'some': b'dict'}
+        mock_loads = Mock(return_value=original_value)
+        mock_dumps = Mock(return_value=b'some bytes')
+        mock_serializer = Mock(loads=mock_loads, dumps=mock_dumps)
+
         mock_response = Mock(
             close=Mock(),
-            release_conn=Mock()
+            release_conn=Mock(),
+            read=Mock(return_value=b'some bytes')
         )
         mock_get_object = Mock(return_value=mock_response)
         mock_minio.get_object = mock_get_object
@@ -18,33 +24,42 @@ class TestMinioBlobClient(unittest.TestCase):
 
         blob_client = MinioBlobClient(
             vendor_client=mock_minio,
-            bucket_name='test'
+            bucket_name='test',
+            serializer=mock_serializer
         )
 
-        response = blob_client.get('test key')
+        parsed_file_collection = blob_client.get('test key')
 
-        assert response == mock_response
-        mock_get_object.assert_called_with('test', 'test key')
+        assert parsed_file_collection == original_value
+        mock_minio.get_object.assert_called_with('test', 'test key')
+        mock_serializer.loads.assert_called_with(b'some bytes')
         mock_response.close.assert_called()
         mock_response.release_conn.assert_called()
 
     def test_put(self):
         mock_minio = Mock()
 
+        original_value = {'some': b'dict'}
+        mock_loads = Mock(return_value=original_value)
+        mock_dumps = Mock(return_value=b'some bytes')
+        mock_serializer = Mock(loads=mock_loads, dumps=mock_dumps)
+
         mock_response = Mock()
-        mock_fput_object = Mock(return_value=mock_response)
-        mock_minio.fput_object = mock_fput_object
+        mock_put_object = Mock(return_value=mock_response)
+        mock_minio.put_object = mock_put_object
 
 
         blob_client = MinioBlobClient(
             vendor_client=mock_minio,
-            bucket_name='test'
+            bucket_name='test',
+            serializer=mock_serializer
         )
 
-        response = blob_client.put('test key', {'test': None})
+        response = blob_client.put('test key', original_value)
 
         assert response == mock_response
-        mock_fput_object.assert_called_with('test', 'test key', {'test': None})
+        mock_serializer.dumps.assert_called_with(original_value)
+        mock_minio.put_object.assert_called_with('test', 'test key', b'some bytes', length=-1, part_size=10*1024*1024)
 
     def test__ensure_bucket_exists(self):
         mock_minio = Mock()
