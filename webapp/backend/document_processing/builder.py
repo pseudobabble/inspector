@@ -18,7 +18,7 @@ class DocumentBuilder:
         self.document_repository = document_repository
 
     def build(self, document: dict) -> None:
-        content_hash = md5(document['content'].encode('utf-8')).hexdigest()
+        content_hash = md5(document['content']).hexdigest()
         existing_document = self.document_repository.get_by_hash(content_hash)
 
         if existing_document:

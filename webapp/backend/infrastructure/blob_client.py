@@ -1,5 +1,7 @@
 import os
 from abc import abstractmethod
+import pickle
+import io
 
 from minio import Minio
 from minio.error import S3Error
@@ -28,28 +30,35 @@ class MinioBlobClient:
     def __init__(
             self,
             vendor_client=Minio(
-                'inspector-mlflow-s3-1:9000',
+                'mlflow-s3:9000',
                 access_key=os.getenv('AWS_ACCESS_KEY_ID'),
-                secret_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+                secret_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+                secure=False # TODO: TECH DEBT
             ),
-            bucket_name=os.getenv('AWS_BUCKET_NAME')
+            bucket_name=os.getenv('FILE_STORE_BUCKET_NAME'),
+            serializer=pickle
     ):
         self.vendor_client = vendor_client
         self.bucket_name = bucket_name
+        self.serializer = serializer
+        self._ensure_bucket_exists()
         super().__init__()
 
     def _ensure_bucket_exists(self):
         if not self.vendor_client.bucket_exists(self.bucket_name):
             self.vendor_client.make_bucket(self.bucket_name)
 
-
     def put(self, key, value):
         try:
-            response = self.vendor_client.fput_object(
+            serialised_value = io.BytesIO(self.serializer.dumps(value))
+            response = self.vendor_client.put_object(
                 self.bucket_name,
                 key,
-                value
+                serialised_value,
+                length=-1,
+                part_size=10*1024*1024
             )
+            # TODO: error handling by status code
             return response
         except Exception as e: # TODO: fix this
             raise e
@@ -57,7 +66,9 @@ class MinioBlobClient:
     def get(self, key):
         try:
             response = self.vendor_client.get_object(self.bucket_name, key)
-            return response
+            # TODO: add error handling
+            retrieved_object = self.serializer.loads(response.read())
+            return retrieved_object
         finally:
             response.close()
             response.release_conn()
