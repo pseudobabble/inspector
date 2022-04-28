@@ -24,7 +24,9 @@ nltk.download('punkt')
 )
 def preprocess_documents():
     raw_documents = get_raw_documents()
-    preprocess_docs()
+    preprocessed_ml_documents = preprocess_raw_documents(raw_documents)
+    ml_documents = save_ml_documents(preprocessed_ml_documents)
+    ml_documents = update_documents(ml_documents)
 
 
 @job(
@@ -36,8 +38,8 @@ def preprocess_documents():
     }
 )
 def answer_query():
-    candidates = retriever()
-    answers = reader(candidates)
+    candidates = retrieve_candidates()
+    answers = refine_candidates(candidates)
 
 @repository
 def document_processing():

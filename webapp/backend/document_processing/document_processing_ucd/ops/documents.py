@@ -74,7 +74,7 @@ def save_ml_documents(context, ml_documents: List[MLDocument]):
         "query": str,
         "top_k": int
     },
-    required_resource_keys={"document_store", "reader"}
+    required_resource_keys={"reader"}
 )
 def refine_candidates(context, candidate_documents: List[MLDocument]):
     logger = context.log
@@ -82,7 +82,6 @@ def refine_candidates(context, candidate_documents: List[MLDocument]):
     query = context.op_config['query']
     top_k = context.op_config['top_k']
 
-    document_store = context.resources.document_store
     reader = context.resources.reader
 
     query_results = reader.predict(
@@ -101,7 +100,7 @@ def refine_candidates(context, candidate_documents: List[MLDocument]):
     },
     required_resource_keys={"document_store", "retriever"}
 )
-def retrieve_candidates(context, candidate_documents: List[MLDocument]):
+def retrieve_candidates(context):
     logger = context.log
 
     query = context.op_config['query']
