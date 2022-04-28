@@ -10,6 +10,7 @@ from tempfile import NamedTemporaryFile
 from pathlib import Path
 import os
 
+import pdftotext
 from pydantic import BaseModel
 
 
@@ -59,6 +60,7 @@ class FileParser:
                 'content': tmp_file.read(),
                 'file_extension': Path(result_filename).suffix.replace('.', '')
             })
+        # TODO: remove file
 
         return parsed_file
 
@@ -93,10 +95,29 @@ class WordProcessorTextParser(FileParser):
         return new_path
 
 
+class PdfTextParser(FileParser):
+
+    allowed_types = ['pdf']
+
+    def process(self, temporary_file: NamedTemporaryFile):
+        result = subprocess.run(
+            shlex.split(f'pdftotext {temporary_file.name}')
+        )
+
+        result_filename = Path(result.args[4].split('.')[0] + '.txt').name
+        new_path = Path('/backend').joinpath(result_filename)
+
+        return new_path
+
+
 class ParserCoordinator:
 
     def __init__(self, parsers: Optional[List[FileParser]] = None):
-        self.parsers = parsers or [WordProcessorXmlParser(), WordProcessorTextParser()]
+        self.parsers = parsers or [
+            WordProcessorXmlParser(),
+            WordProcessorTextParser(),
+            PdfTextParser()
+        ]
 
     def set_parser(self, parser: FileParser) -> None:
         self.parsers.append(parser())
