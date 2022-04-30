@@ -59,6 +59,7 @@ class FileParser:
                 'content': tmp_file.read(),
                 'file_extension': Path(result_filename).suffix.replace('.', '')
             })
+        # TODO: remove file
 
         return parsed_file
 
@@ -96,7 +97,10 @@ class WordProcessorTextParser(FileParser):
 class ParserCoordinator:
 
     def __init__(self, parsers: Optional[List[FileParser]] = None):
-        self.parsers = parsers or [WordProcessorXmlParser(), WordProcessorTextParser()]
+        self.parsers = parsers or [
+            WordProcessorXmlParser(),
+            WordProcessorTextParser()
+        ]
 
     def set_parser(self, parser: FileParser) -> None:
         self.parsers.append(parser())

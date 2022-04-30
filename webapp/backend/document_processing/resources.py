@@ -8,7 +8,7 @@ import flask
 from flask_restful import Resource
 from marshmallow import Schema
 
-#from infrastructure.dagster_client import DagsterClient
+from infrastructure.dagster_client import DagsterClient
 from infrastructure.repository import transaction
 from infrastructure.blob_client import BlobClient, MinioBlobClient
 from .builder import DocumentBuilder
@@ -113,13 +113,11 @@ class Upload(Resource):
             self,
             document_builder: DocumentBuilder = DocumentBuilder(),
             document_repository: DocumentRepository = DocumentRepository(),
-            parser_coordinator: ParserCoordinator = ParserCoordinator(),
-            blob_client: BlobClient = MinioBlobClient()
+            dagster_client: DagsterClient = DagsterClient()
     ):
         self.document_builder = document_builder
         self.document_repository = document_repository
-        self.parser_coordinator = parser_coordinator
-        self.blob_client = blob_client
+        self.dagster_client = dagster_client
 
     @transaction
     def post(self):
@@ -129,16 +127,13 @@ class Upload(Resource):
             for f in uploaded_files
         ]
 
-        parsed_file_collections = self.parser_coordinator.parse(file_data)
-
-        for parsed_file_collection in parsed_file_collections:
-            blob_key = md5(parsed_file_collection.original.content).hexdigest()
-            self.blob_client.put(blob_key, parsed_file_collection.dict())
-
+        document_ids = []
+        for datum in file_data:
             document = self.document_builder.build({
-                'filename': parsed_file_collection.original.filename,
-                'content': parsed_file_collection.original.content
+                'filename': datum['filename'],
+                'content': datum['content']
             })
+            document_ids.append(document.id)
 
         return {'success': 200}
 
