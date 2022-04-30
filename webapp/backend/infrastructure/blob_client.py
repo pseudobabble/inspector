@@ -29,16 +29,19 @@ class MinioBlobClient:
 
     def __init__(
             self,
-            vendor_client=Minio(
-                'mlflow-s3:9000',
-                access_key=os.getenv('AWS_ACCESS_KEY_ID'),
-                secret_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-                secure=False # TODO: TECH DEBT
-            ),
-            bucket_name=os.getenv('FILE_STORE_BUCKET_NAME'),
+            url,
+            access_key,
+            secret_key,
+            bucket_name,
+            secure=False,
             serializer=pickle
     ):
-        self.vendor_client = vendor_client
+        self.vendor_client = Minio(
+            url,
+            access_key,
+            secret_key,
+            secure
+        )
         self.bucket_name = bucket_name
         self.serializer = serializer
         self._ensure_bucket_exists()

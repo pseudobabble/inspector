@@ -4,18 +4,18 @@ from typing import List
 import requests
 from dagster import resource
 
-from schemata import PipelineToMLDocument
+from schemata import PipelineToMLDocument, MLDocument
 
 
 class RawDocumentsRepository:
 
     def __init__(
             self,
-            dagster_init_context,
+            url,
             client = requests,
             pipeline_to_document_schema = PipelineToMLDocument()
     ):
-        self.url = dagster_init_context.resource_config.get('url')
+        self.url = url
         self.client = client
         self.pipeline_to_document_schema = pipeline_to_document_schema
 
@@ -41,4 +41,4 @@ class RawDocumentsRepository:
 
 @resource(config_schema={"url": str})
 def raw_documents_repository(init_context):
-    return RawDocumentsRepository(init_context)
+    return RawDocumentsRepository(init_context.resource_config['url'])

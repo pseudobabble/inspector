@@ -1,23 +1,38 @@
-FROM python:3.7-slim
+FROM ubuntu:20.04
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata \
+    build-essential \
+    libpoppler-cpp-dev \
+    pkg-config \
+    python3-dev \
+    libreoffice-common \
+    python3.8 \
+    python3-pip
 
 # Checkout and install dagster libraries needed to run the gRPC server
 # exposing your repository to dagit and dagster-daemon, and to load the DagsterInstance
-
-RUN pip install \
+RUN pip --no-input install \
     dagster \
     dagster-postgres \
     dagster-docker \
     requests \
     farm-haystack \
-    marshmallow
+    marshmallow \
+    pdftotext \
+    minio
+
 
 # Add repository code
 
 WORKDIR /opt/dagster/app
 
-COPY document_processing_ucd/document_processing.py /opt/dagster/app
-COPY schemata.py /opt/dagster/app
-COPY infrastructure/blob_client.py /opt/dagster/app
+COPY ./document_processing/document_processing_ucd/document_processing.py /opt/dagster/app
+COPY ./document_processing/document_processing_ucd/__init__.py /opt/dagster/app
+COPY ./document_processing/document_processing_ucd/ops /opt/dagster/app/ops
+COPY ./document_processing/document_processing_ucd/resources /opt/dagster/app/resources
+COPY ./document_processing/schemata.py /opt/dagster/app
+COPY ./document_processing/parsers.py /opt/dagster/app
+COPY ./infrastructure/blob_client.py /opt/dagster/app
 
 # Run dagster gRPC server on port 4000
 

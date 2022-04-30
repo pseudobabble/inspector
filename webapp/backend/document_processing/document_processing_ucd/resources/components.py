@@ -1,14 +1,15 @@
 import enum
 from typing import List
 
+import nltk
 from haystack.nodes import PreProcessor, FARMReader, TfidfRetriever
-from dagster import resource, Enum
+from dagster import resource, Enum, Field
 
 
 nltk.download('punkt')
 
 
-class SplitBy(Enum):
+class SplitBy(enum.Enum):
     word = "word"
     sentence = "sentence"
     passage = "passage"
@@ -29,19 +30,20 @@ class SplitBy(Enum):
 )
 def preprocessor(init_context):
     # TODO: select different preprocessors
-    preprocessor = PreProcessor(**init_context.resource_config['preprocessor_init_args'])
+    preprocessor = PreProcessor(
+        **init_context.resource_config['preprocessor_init_args']
+    )
 
     return preprocessor
 
 
 @resource(
     config_schema={
-        model_name=str,
-        use_gpu=bool
+        "model_name": str,
+        "use_gpu": bool
     },
 )
 def reader(init_context):
-
     model_name = init_context.resource_config['model_name']
     use_gpu = init_context.resource_config['use_gpu']
     # TODO: make reader selectable

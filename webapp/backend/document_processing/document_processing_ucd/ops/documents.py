@@ -1,23 +1,48 @@
 from typing import List
 from hashlib import md5
 
-from dagster import op
+from dagster import op, Array
+
+from schemata import MLDocument
 
 
 @op(
+    required_resource_keys={"blob_client", "file_parser"}
+)
+def store_files(context, raw_documents: List[dict]):
+    logger = context.log
+
+    blob_client = context.resources.blob_client
+    file_parser = context.resources.file_parser
+
+    parsed_file_collections = file_parser.parse(raw_documents)
+
+    for parsed_file_collection in parsed_file_collections:
+        blob_key = md5(parsed_file_collection.original.content).hexdigest()
+        self.blob_client.put(blob_key, parsed_file_collection.dict())
+
+    return [
+        {
+            'filename': parsed_file_collection.original.filename,
+            'content': parsed_file_collection.original.content
+
+        }
+        for parsed_file_collection
+        in parsed_file_collections
+    ]
+
+@op(
     config_schema={"document_ids": Array(int)},
-    required_resource_keys={"document_store", "raw_documents_repository"}
+    required_resource_keys={"raw_documents_repository"}
 )
 def get_raw_documents(context):
     logger = context.log
 
     document_ids = context.op_config['document_ids']
 
-    document_store = context.resources.document_store
     raw_documents_repository = context.resources.raw_documents_repository
 
     logger.info("Processing documents for ids %s", document_ids)
-
     raw_documents = raw_documents_repository.get_by_ids(document_ids)
     logger.info(
         "Found %s documents to process: %s",
@@ -31,7 +56,9 @@ def get_raw_documents(context):
 @op(
     required_resource_keys={"raw_documents_repository"}
 )
-def update_documents(ml_documents: List[MLDocument]):
+def update_documents(context, ml_documents: List[MLDocument]):
+    logger = context.log
+
     response = raw_documents_repository.update_documents(ml_documents)
     logger.info("Update response: %s", response.status_code)
 
@@ -41,7 +68,7 @@ def update_documents(ml_documents: List[MLDocument]):
 @op(
     required_resource_keys={"document_store", "preprocessor"}
 )
-def preprocess_raw_documents(context, raw_documents: List[Dict]):
+def preprocess_raw_documents(context, raw_documents: List[dict]):
     logger = context.log
 
     document_store = context.resources.document_store
