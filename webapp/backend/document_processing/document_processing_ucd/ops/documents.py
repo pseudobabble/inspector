@@ -8,6 +8,7 @@ import shlex
 
 from dagster import op, Array
 from dagster_shell import create_shell_command_op
+from haystack.schema import Document
 
 from schemata import MLDocument
 
@@ -189,11 +190,12 @@ def save_ml_documents_to_document_store(context, preprocessed_documents: List[di
     },
     required_resource_keys={"reader"}
 )
-def refine_candidates(context, candidate_documents: List[MLDocument]):
+def refine_candidates(context, candidate_documents: List[Document]):
     logger = context.log
 
     query = context.op_config['query']
     top_k = context.op_config['top_k']
+    logger.info("Refining candidates for query '%s'")
 
     reader = context.resources.reader
 
@@ -202,6 +204,7 @@ def refine_candidates(context, candidate_documents: List[MLDocument]):
         documents=candidate_documents,
         top_k=top_k
     )
+    logger.info("Refined query results: %s", query_results)
 
     return query_results
 
@@ -218,16 +221,15 @@ def retrieve_candidates(context):
 
     query = context.op_config['query']
     top_k = context.op_config['top_k']
+    logger.info("Retrieving %s candidates for query '%s'", top_k, query)
 
     document_store = context.resources.document_store
     retriever = context.resources.retriever
 
     candidates = retriever.retrieve(
         query=query,
-        documents=document_store.get_all_documents(),
         top_k=top_k
     )
-
-    candidates = retriever(document_store)
+    logger.info("Found %s candidates for query '%s': %s", len(candidates), query, candidates)
 
     return candidates
