@@ -5,6 +5,7 @@ import uuid
 import pickle
 
 import sqlalchemy.types as types
+from sqlalchemy.types import LargeBinary
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, TypeDecorator
 from sqlalchemy.orm import composite, relationship
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -20,7 +21,7 @@ class Document(repository.Base):
 
     id = Column(Integer, primary_key=True)
     filename = Column(String(length=50), unique=True)
-    raw_content = Column(String)
+    raw_content = Column(LargeBinary)
     content_hash = Column(String)
     ml_documents = relationship("MLDocument")
 
@@ -31,3 +32,6 @@ class MLDocument(repository.Base):
     document_store_id = Column(String)
     document_id = Column(Integer, ForeignKey("documents.id"))
     document = relationship("Document", back_populates="ml_documents")
+    # run id
+
+# TODO: class Run
