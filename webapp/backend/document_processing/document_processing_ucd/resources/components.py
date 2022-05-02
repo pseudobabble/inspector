@@ -3,7 +3,7 @@ from typing import List
 
 import nltk
 from haystack.nodes import PreProcessor, FARMReader, TfidfRetriever
-from dagster import resource, Enum, Field
+from dagster import resource, Enum, Field, Array
 
 
 nltk.download('punkt')
@@ -20,7 +20,7 @@ class SplitBy(enum.Enum):
             "clean_header_footer": bool,
             "clean_whitespace": bool,
             "clean_empty_lines": bool,
-            "remove_substrings": bool,
+            "remove_substrings": Array(str),
             "split_by": Field(Enum.from_python_enum(SplitBy)),
             "split_length": int,
             "split_overlap": int,

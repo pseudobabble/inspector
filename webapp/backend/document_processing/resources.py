@@ -14,7 +14,6 @@ from infrastructure.blob_client import BlobClient, MinioBlobClient
 from .builder import DocumentBuilder
 from .schemata import Document, RawDocument, MLDocument, DocumentToPipeline, PipelineToMLDocument
 from .repository import DocumentRepository
-from .parsers import ParserCoordinator
 
 
 
@@ -64,7 +63,8 @@ class Documents(Resource):
             many = isinstance(documents, list)
             documents_response = self.document_schema.dump(documents, many=many)
 
-
+        print('ARRIVED')
+        print(documents_response)
         return documents_response
 
     @transaction
@@ -126,6 +126,8 @@ class Upload(Resource):
             {'filename': f.filename, 'content': f.read()}
             for f in uploaded_files
         ]
+        print(file_data)
+        print(type(file_data[0]['content']))
 
         document_ids = []
         for datum in file_data:
@@ -134,6 +136,7 @@ class Upload(Resource):
                 'content': datum['content']
             })
             document_ids.append(document.id)
+            print(document.raw_content)
 
         return {'success': 200}
 

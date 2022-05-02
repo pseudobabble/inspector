@@ -1,35 +1,106 @@
 from typing import List
 from hashlib import md5
+import os
+from pathlib import Path
+import time
+import subprocess
+import shlex
 
 from dagster import op, Array
+from dagster_shell import create_shell_command_op
 
 from schemata import MLDocument
 
 
-@op(
-    required_resource_keys={"blob_client", "file_parser"}
+# op which just runs a shell command
+convert_input_doc_files = create_shell_command_op(
+    '/usr/bin/soffice --headless --convert-to txt:Text --outdir ./tmp/txt/ ./tmp/docs_in/*.doc ./tmp/docs_in/*.docx',
+    name='convert_input_doc_files'
 )
-def store_files(context, raw_documents: List[dict]):
+
+@op
+def docs_to_text(context, bind: bool):
+    logger = context.log
+
+    paths = os.listdir('./tmp/docs_in')
+    logger.info("Converting docs to text: %s", paths)
+
+    # result = subprocess.run(
+    #     shlex.split(f'/usr/bin/soffice "-env:UserInstallation=file:///tmp/LibreOffice_Conversion_root" --headless --convert-to txt:Text --outdir ./tmp/txt/ ./tmp/docs_in/*.doc ./tmp/docs_in/*.docx'),
+    #     capture_output=True
+    # )
+    # logger.info(result)
+
+    # if result.stderr:
+    #     logger.info(result.stderr)
+
+    # logger.info(result.stdout)
+    result = os.system(
+        '/usr/bin/soffice "-env:UserInstallation=file:///tmp/LibreOffice_Conversion_root" --headless --convert-to txt:Text --outdir ./tmp/txt/ ./tmp/docs_in/*.doc ./tmp/docs_in/*.docx'
+    )
+    logger.info("Converted files: %s", os.listdir('./tmp/txt'))
+
+    return result
+
+@op(
+    required_resource_keys={"blob_client"}
+)
+def write_input_files(context, raw_documents: List[dict]):
+    logger = context.log
+    logger.info("Received %s raw_documents", len(raw_documents))
+
+    blob_client = context.resources.blob_client
+
+    logger.info("Putting %s original files to blob store", len(raw_documents))
+    logger.info("Writing %s files to filesystem for conversion", len(raw_documents))
+    for d in raw_documents:
+        # store original content
+        filename_path = Path(d['filename'])
+        file_extension = filename_path.suffix
+        filename_stem = filename_path.stem
+        key = f"{filename_stem}/original{file_extension}"
+        blob_client.put(key, d['content'])
+
+        # write to filesystem for conversion
+        os.makedirs('./tmp/docs_in', exist_ok=True)
+        os.makedirs('./tmp/txt', exist_ok=True)
+        with open(f"./tmp/docs_in/{d['filename']}", 'wb') as f:
+            f.write(d['content'])
+
+    return True
+
+
+@op(
+    required_resource_keys={"blob_client"}
+)
+def store_converted_files(context, result):
     logger = context.log
 
     blob_client = context.resources.blob_client
-    file_parser = context.resources.file_parser
 
-    parsed_file_collections = file_parser.parse(raw_documents)
+    paths = [os.path.join('/opt/dagster/app/tmp/txt/', item) for item in os.listdir('./tmp/txt')]
 
-    for parsed_file_collection in parsed_file_collections:
-        blob_key = md5(parsed_file_collection.original.content).hexdigest()
-        self.blob_client.put(blob_key, parsed_file_collection.dict())
+    logger.info("Reading txt paths: %s", paths)
+    raw_text_documents = []
+    for p in paths:
+        with open(p, 'r') as f:
+            raw_text_doc = {
+                'filename': Path(f.name).name,
+                'content': f.read()
+            }
+            raw_text_documents.append(raw_text_doc)
 
-    return [
-        {
-            'filename': parsed_file_collection.original.filename,
-            'content': parsed_file_collection.original.content
+    logger.info("Putting %s raw_text_documents to blob store", len(raw_text_documents))
+    for d in raw_text_documents:
+        filename_path = Path(d['filename'])
+        file_extension = filename_path.suffix
+        filename_stem = filename_path.stem
+        key = f"{filename_stem}/text{file_extension}"
+        blob_client.put(key, d['content'])
 
-        }
-        for parsed_file_collection
-        in parsed_file_collections
-    ]
+    return raw_text_documents
+
+
 
 @op(
     config_schema={"document_ids": Array(int)},
@@ -44,6 +115,7 @@ def get_raw_documents(context):
 
     logger.info("Processing documents for ids %s", document_ids)
     raw_documents = raw_documents_repository.get_by_ids(document_ids)
+    logger.info(raw_documents)
     logger.info(
         "Found %s documents to process: %s",
         len(raw_documents),
@@ -59,10 +131,13 @@ def get_raw_documents(context):
 def update_documents(context, ml_documents: List[MLDocument]):
     logger = context.log
 
+    raw_documents_repository = context.resources.raw_documents_repository
+
+    logger.info("Updating domain with %s MLDocuments", len(ml_documents))
     response = raw_documents_repository.update_documents(ml_documents)
     logger.info("Update response: %s", response.status_code)
 
-    return preprocessed_docs
+    return ml_documents
 
 
 @op(
@@ -75,6 +150,12 @@ def preprocess_raw_documents(context, raw_documents: List[dict]):
     preprocessor = context.resources.preprocessor
 
     preprocessed_docs = preprocessor.process(raw_documents)
+    logger.info(
+        "Preprocessed %s raw_documents into %s preprocessed docs",
+        len(raw_documents),
+        len(preprocessed_docs)
+    )
+
 
     return preprocessed_docs
 
@@ -83,14 +164,18 @@ def preprocess_raw_documents(context, raw_documents: List[dict]):
     required_resource_keys={"document_store"}
 )
 def save_ml_documents(context, ml_documents: List[MLDocument]):
+    logger = context.log
+
     document_store = context.resources.document_store
+
     for doc in ml_documents:
         doc['id'] = md5(doc['content'].encode('utf-8')).hexdigest()
 
     document_store.write_documents(ml_documents)
     logger.info(
-        "Updating documents with %s MLDocuments",
-        len(ml_documents)
+        "Updating documents with %s MLDocuments: %s",
+        len(ml_documents),
+        [d['id'] for d in ml_documents]
     )
 
     return ml_documents

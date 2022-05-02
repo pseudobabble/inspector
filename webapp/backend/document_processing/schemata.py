@@ -1,3 +1,5 @@
+import base64
+
 from marshmallow import Schema, fields
 
 class RawDocument(Schema):
@@ -45,15 +47,33 @@ class DocumentToPipeline(Schema):
     This class converts Documents to
     the dict to post to the pipelines
     """
-    document_id = fields.Method('get_document_id')
-    content = fields.Method('get_content')
+    filename = fields.String()
+    document_id = fields.Method('get_document_id', deserialize="load_document_id")
+    content = fields.Method('get_content', deserialize="load_content")
     content_type = fields.String(dump_default="text")
 
     def get_content(self, obj):
-        return obj.raw_content
+        """
+        Serialize bytes by converting to a 'list'
+
+        >>> b = b'some_bytes'
+        >>> list(b)
+        [115, 111, 109, 101, 95, 98, 121, 116, 101, 115]
+        >>> bytes(list(b))
+        b'some_bytes'
+        """
+        return list(obj.raw_content)
+
+    def load_content(self, value):
+        """Deserialize"""
+        return bytes(value)
 
     def get_document_id(self, obj):
+        """Serialize"""
         return obj.id
+
+    def load_document_id(self, value):
+        return value
 
 class PipelineToMLDocument(Schema):
     """

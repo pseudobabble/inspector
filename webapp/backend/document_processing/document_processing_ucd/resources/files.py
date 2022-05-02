@@ -22,7 +22,8 @@ def blob_client(init_context):
     return MinioBlobClient(
         url,
         access_key=access_key,
-        secret_key=secret_key
+        secret_key=secret_key,
+        bucket_name=bucket_name
     )
 
 @resource

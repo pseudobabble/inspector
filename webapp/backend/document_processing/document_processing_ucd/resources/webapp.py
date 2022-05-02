@@ -4,7 +4,7 @@ from typing import List
 import requests
 from dagster import resource
 
-from schemata import PipelineToMLDocument, MLDocument
+from schemata import DocumentToPipeline, PipelineToMLDocument, MLDocument
 
 
 class RawDocumentsRepository:
@@ -13,11 +13,13 @@ class RawDocumentsRepository:
             self,
             url,
             client = requests,
-            pipeline_to_document_schema = PipelineToMLDocument()
+            pipeline_to_document_schema = PipelineToMLDocument(),
+            document_to_pipeline_schema = DocumentToPipeline()
     ):
         self.url = url
         self.client = client
         self.pipeline_to_document_schema = pipeline_to_document_schema
+        self.document_to_pipeline_schema = document_to_pipeline_schema
 
     def get_by_ids(self, document_ids: List[int]):
         documents_response = self.client.get(
@@ -25,7 +27,12 @@ class RawDocumentsRepository:
             params={"ids": json.dumps(document_ids)}
         )
 
-        raw_documents = [d for d in documents_response.json()]
+        print(documents_response)
+
+        raw_documents = self.document_to_pipeline_schema.load(
+            [d for d in documents_response.json()],
+            many=True
+        )
 
         return raw_documents
 

@@ -2,7 +2,7 @@
 from typing import List
 from dataclasses import dataclass, asdict
 
-from dagster import repository, job
+from dagster import repository, job, graph
 import nltk
 
 from resources.webapp import raw_documents_repository
@@ -12,7 +12,8 @@ from resources.components import preprocessor, retriever, reader
 
 from ops.documents import get_raw_documents, \
     preprocess_raw_documents, update_documents, save_ml_documents, \
-    retrieve_candidates, refine_candidates, store_files
+    retrieve_candidates, refine_candidates, write_input_files, convert_input_doc_files, \
+    store_converted_files, docs_to_text
 
 
 nltk.download('punkt')
@@ -29,8 +30,10 @@ nltk.download('punkt')
 )
 def preprocess_documents():
     raw_documents = get_raw_documents()
-    store_files(raw_documents)
-    preprocessed_ml_documents = preprocess_raw_documents(raw_documents)
+    bind = write_input_files(raw_documents)
+    conversion_result = docs_to_text(bind)
+    raw_text_documents = store_converted_files(conversion_result)
+    preprocessed_ml_documents = preprocess_raw_documents(raw_text_documents)
     ml_documents = save_ml_documents(preprocessed_ml_documents)
     update_documents(ml_documents)
 
