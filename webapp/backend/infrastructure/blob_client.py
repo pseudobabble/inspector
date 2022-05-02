@@ -38,9 +38,9 @@ class MinioBlobClient:
     ):
         self.vendor_client = Minio(
             url,
-            access_key,
-            secret_key,
-            secure
+            access_key=access_key,
+            secret_key=secret_key,
+            secure=secure
         )
         self.bucket_name = bucket_name
         self.serializer = serializer
