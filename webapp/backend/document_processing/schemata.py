@@ -38,9 +38,15 @@ class Document(Schema):
     """
     id = fields.Integer()
     filename = fields.String()
-    raw_content = fields.String()
+    raw_content = fields.Method('get_raw_content', deserialize='load_raw_content')
     content_hash = fields.String()
     ml_documents = fields.Nested(MLDocument)
+
+    def get_raw_content(self, obj):
+        return list(obj.raw_content)
+
+    def load_raw_content(self, value):
+        return bytes(value)
 
 class DocumentToPipeline(Schema):
     """
@@ -81,8 +87,12 @@ class PipelineToMLDocument(Schema):
     to MLDocument format data
     """
     id = fields.String()
-    document_id = fields.Integer()
+    document_id = fields.Method('get_document_id', deserialize='load_document_id')
     content = fields.String()
-    content_type = fields.String()
     meta = fields.Dict()
-    # add embedded etc
+
+    def get_document_id(self, obj):
+        return obj['meta']['document_id']
+
+    def load_document_id(self, value):
+        return value

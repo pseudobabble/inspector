@@ -19,28 +19,18 @@ convert_input_doc_files = create_shell_command_op(
 )
 
 @op
-def docs_to_text(context, bind: bool):
+def docs_to_text(context, raw_documents: List[dict]):
     logger = context.log
 
     paths = os.listdir('./tmp/docs_in')
     logger.info("Converting docs to text: %s", paths)
 
-    # result = subprocess.run(
-    #     shlex.split(f'/usr/bin/soffice "-env:UserInstallation=file:///tmp/LibreOffice_Conversion_root" --headless --convert-to txt:Text --outdir ./tmp/txt/ ./tmp/docs_in/*.doc ./tmp/docs_in/*.docx'),
-    #     capture_output=True
-    # )
-    # logger.info(result)
-
-    # if result.stderr:
-    #     logger.info(result.stderr)
-
-    # logger.info(result.stdout)
     result = os.system(
         '/usr/bin/soffice "-env:UserInstallation=file:///tmp/LibreOffice_Conversion_root" --headless --convert-to txt:Text --outdir ./tmp/txt/ ./tmp/docs_in/*.doc ./tmp/docs_in/*.docx'
     )
     logger.info("Converted files: %s", os.listdir('./tmp/txt'))
 
-    return result
+    return raw_documents
 
 @op(
     required_resource_keys={"blob_client"}
@@ -67,13 +57,13 @@ def write_input_files(context, raw_documents: List[dict]):
         with open(f"./tmp/docs_in/{d['filename']}", 'wb') as f:
             f.write(d['content'])
 
-    return True
+    return raw_documents
 
 
 @op(
     required_resource_keys={"blob_client"}
 )
-def store_converted_files(context, result):
+def store_converted_files(context, raw_documents: List[dict]):
     logger = context.log
 
     blob_client = context.resources.blob_client
@@ -83,12 +73,17 @@ def store_converted_files(context, result):
     logger.info("Reading txt paths: %s", paths)
     raw_text_documents = []
     for p in paths:
-        with open(p, 'r') as f:
+        with open(p, 'rb') as f:
             raw_text_doc = {
                 'filename': Path(f.name).name,
                 'content': f.read()
             }
             raw_text_documents.append(raw_text_doc)
+
+    for td in raw_text_documents:
+        for rd in raw_documents:
+            if Path(rd['filename']).stem == Path(td['filename']).stem:
+                td['meta'] = rd['meta']
 
     logger.info("Putting %s raw_text_documents to blob store", len(raw_text_documents))
     for d in raw_text_documents:
@@ -122,18 +117,21 @@ def get_raw_documents(context):
         [d['document_id'] for d in raw_documents]
     )
 
+    for d in raw_documents:
+        d['meta'] = {'document_id': d['document_id']}
+
     return raw_documents
 
 
 @op(
     required_resource_keys={"raw_documents_repository"}
 )
-def update_documents(context, ml_documents: List[MLDocument]):
+def update_documents(context, ml_documents: List[dict]):
     logger = context.log
 
     raw_documents_repository = context.resources.raw_documents_repository
 
-    logger.info("Updating domain with %s MLDocuments", len(ml_documents))
+    logger.info("Updating domain with %s MLDocuments: %s", len(ml_documents), ml_documents)
     response = raw_documents_repository.update_documents(ml_documents)
     logger.info("Update response: %s", response.status_code)
 
@@ -143,16 +141,19 @@ def update_documents(context, ml_documents: List[MLDocument]):
 @op(
     required_resource_keys={"document_store", "preprocessor"}
 )
-def preprocess_raw_documents(context, raw_documents: List[dict]):
+def preprocess_raw_documents(context, raw_text_documents: List[dict]):
     logger = context.log
 
     document_store = context.resources.document_store
     preprocessor = context.resources.preprocessor
 
-    preprocessed_docs = preprocessor.process(raw_documents)
+    for document in raw_text_documents:
+        document['content'] = document['content'].decode('utf-8')
+
+    preprocessed_docs = preprocessor.process(raw_text_documents)
     logger.info(
         "Preprocessed %s raw_documents into %s preprocessed docs",
-        len(raw_documents),
+        len(raw_text_documents),
         len(preprocessed_docs)
     )
 
@@ -163,22 +164,22 @@ def preprocess_raw_documents(context, raw_documents: List[dict]):
 @op(
     required_resource_keys={"document_store"}
 )
-def save_ml_documents(context, ml_documents: List[MLDocument]):
+def save_ml_documents_to_document_store(context, preprocessed_documents: List[dict]):
     logger = context.log
 
     document_store = context.resources.document_store
 
-    for doc in ml_documents:
+    for doc in preprocessed_documents:
         doc['id'] = md5(doc['content'].encode('utf-8')).hexdigest()
 
-    document_store.write_documents(ml_documents)
+    document_store.write_documents(preprocessed_documents)
     logger.info(
         "Updating documents with %s MLDocuments: %s",
-        len(ml_documents),
-        [d['id'] for d in ml_documents]
+        len(preprocessed_documents),
+        [d['id'] for d in preprocessed_documents]
     )
 
-    return ml_documents
+    return preprocessed_documents
 
 
 @op(

@@ -11,7 +11,7 @@ from resources.persistence import sql_document_store
 from resources.components import preprocessor, retriever, reader
 
 from ops.documents import get_raw_documents, \
-    preprocess_raw_documents, update_documents, save_ml_documents, \
+    preprocess_raw_documents, update_documents, save_ml_documents_to_document_store, \
     retrieve_candidates, refine_candidates, write_input_files, convert_input_doc_files, \
     store_converted_files, docs_to_text
 
@@ -30,12 +30,12 @@ nltk.download('punkt')
 )
 def preprocess_documents():
     raw_documents = get_raw_documents()
-    bind = write_input_files(raw_documents)
-    conversion_result = docs_to_text(bind)
-    raw_text_documents = store_converted_files(conversion_result)
+    raw_documents = write_input_files(raw_documents)
+    raw_documents = docs_to_text(raw_documents)
+    raw_text_documents = store_converted_files(raw_documents)
     preprocessed_ml_documents = preprocess_raw_documents(raw_text_documents)
-    ml_documents = save_ml_documents(preprocessed_ml_documents)
-    update_documents(ml_documents)
+    preprocessed_ml_documents = save_ml_documents_to_document_store(preprocessed_ml_documents)
+    update_documents(preprocessed_ml_documents)
 
 
 @job(

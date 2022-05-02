@@ -53,7 +53,7 @@ class MinioBlobClient:
 
     def put(self, key, value):
         try:
-            serialised_value = io.BytesIO(self.serializer.dumps(value))
+            serialised_value = io.BytesIO(value)
             response = self.vendor_client.put_object(
                 self.bucket_name,
                 key,
@@ -70,7 +70,7 @@ class MinioBlobClient:
         try:
             response = self.vendor_client.get_object(self.bucket_name, key)
             # TODO: add error handling
-            retrieved_object = self.serializer.loads(response.read())
+            retrieved_object = io.BytesIO(response.data)
             return retrieved_object
         finally:
             response.close()

@@ -34,7 +34,7 @@ class DocumentBuilder:
         return document
 
     def update_documents_with_ml_documents(self, ml_documents: List[dict]):
-        ml_document_ids = [d['meta']['document_id'] for d in ml_documents] # TODO: deduplicate them
+        ml_document_ids = [d['document_id'] for d in ml_documents] # TODO: deduplicate them
 
         documents = self.document_repository.get_by_ids(ml_document_ids)
         documents_by_id = {d.id: d for d in documents}
