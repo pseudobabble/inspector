@@ -180,7 +180,7 @@ services:
   webapp:
     build:
       context: ./webapp
-      dockerfile: Dockerfile_webapp
+      dockerfile: backend/docker/Dockerfile
     environment:
       POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
       POSTGRES_USER: "webapp_postgres_user"
@@ -199,6 +199,8 @@ services:
       - dagster-dagit
     stdin_open: true
     tty: true
+    volumes:
+      - ./webapp/backend:/backend
 
   webapp-postgres:
     image: postgres:11
