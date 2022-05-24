@@ -23,5 +23,5 @@ if __name__ == '__main__':
     app.run(
         host=os.getenv("FLASK_HOST", "webapp"),
         port=int(os.getenv("FLASK_PORT", "8080")),
-        debug=bool(os.getenv("FLASK_DEBUG", True)),
+        debug=bool(os.getenv("FLASK_DEBUG", False)),
     )
