@@ -19,9 +19,20 @@ api.add_resource(Documents, "/documents/update_ml_documents", endpoint="update_m
 api.add_resource(Upload, *Upload.routes)
 #api.add_resource(Trigger, *Trigger.routes)
 
+
+_env = lambda init, key, default=None: init(os.getenv(key, default))
+_env.__doc__ = """
+A convenice function for expressing typed env config consistently
+
+:param init: Callable, The constructor (usually type) of the env var.
+:param key: str, The name of the env var.
+:param default: The value to return if the env var is not set.
+"""
+
+
 if __name__ == '__main__':
     app.run(
-        host=os.getenv("FLASK_HOST", "webapp"),
-        port=int(os.getenv("FLASK_PORT", "8080")),
-        debug=bool(os.getenv("FLASK_DEBUG", False)),
+        host=_env(str, "FLASK_HOST", default="webapp"),
+        port=_env(int,"FLASK_PORT", default="8080"),
+        debug=_env(bool,"FLASK_DEBUG", default=False),
     )
