@@ -25,10 +25,10 @@ class MLDocument(Schema):
     embedding = fields.Method('get_embedding')
     id_hash_keys = fields.Method('get_id_hash_keys')
 
-    def get_embedding(self, obj):
+    def get_embedding(self, obj) -> str:
         return str(list(obj))
 
-    def get_id_hash_keys(self, obj):
+    def get_id_hash_keys(self, obj) -> str:
         return str(obj)
 
 class Document(Schema):
@@ -42,10 +42,10 @@ class Document(Schema):
     content_hash = fields.String()
     ml_documents = fields.Nested(MLDocument)
 
-    def get_raw_content(self, obj):
+    def get_raw_content(self, obj) -> list:
         return list(obj.raw_content)
 
-    def load_raw_content(self, value):
+    def load_raw_content(self, value) -> bytes:
         return bytes(value)
 
 class DocumentToPipeline(Schema):
@@ -58,15 +58,16 @@ class DocumentToPipeline(Schema):
     content = fields.Method('get_content', deserialize="load_content")
     content_type = fields.String(dump_default="text")
 
-    def get_content(self, obj):
+    def get_content(self, obj) -> list:
         """
-        Serialize bytes by converting to a 'list'
+        Serialize bytes by converting to a 'list':
 
-        >>> b = b'some_bytes'
-        >>> list(b)
-        [115, 111, 109, 101, 95, 98, 121, 116, 101, 115]
-        >>> bytes(list(b))
-        b'some_bytes'
+            >>> b = b'some_bytes'
+            >>> list(b)
+            [115, 111, 109, 101, 95, 98, 121, 116, 101, 115]
+            >>> bytes(list(b))
+            b'some_bytes'
+
         """
         return list(obj.raw_content)
 
@@ -94,5 +95,5 @@ class PipelineToMLDocument(Schema):
     def get_document_id(self, obj):
         return obj['meta']['document_id']
 
-    def load_document_id(self, value):
+    def load_document_id(self, value) -> str:
         return value

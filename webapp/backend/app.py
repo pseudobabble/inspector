@@ -1,9 +1,9 @@
+import os
 from flask import Flask
 from flask_restful import Api
 
 from infrastructure import repository
 from document_processing import Documents, Upload
-
 
 repository.create_all()
 
@@ -20,4 +20,8 @@ api.add_resource(Upload, *Upload.routes)
 #api.add_resource(Trigger, *Trigger.routes)
 
 if __name__ == '__main__':
-    app.run(host="webapp", port=8080, debug=True)
+    app.run(
+        host=os.getenv("FLASK_HOST", "webapp"),
+        port=int(os.getenv("FLASK_PORT", "8080")),
+        debug=bool(os.getenv("FLASK_DEBUG", True)),
+    )

@@ -189,6 +189,9 @@ services:
       AWS_ACCESS_KEY: abc123abc123
       AWS_ACCESS_SECRET: abc123abc123
       FILE_STORE_BUCKET_NAME: file-store
+      FLASK_APP: "/backend/app.py"
+      FLASK_ENV: "development"
+      FLASK_HOST: "0.0.0.0"
     container_name: webapp
     ports:
       - 8080:8080
