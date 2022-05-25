@@ -180,7 +180,7 @@ services:
   webapp:
     build:
       context: ./webapp
-      dockerfile: Dockerfile_webapp
+      dockerfile: backend/docker/Dockerfile
     environment:
       POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
       POSTGRES_USER: "webapp_postgres_user"
@@ -189,6 +189,10 @@ services:
       AWS_ACCESS_KEY: abc123abc123
       AWS_ACCESS_SECRET: abc123abc123
       FILE_STORE_BUCKET_NAME: file-store
+      FLASK_APP: "/backend/app.py"
+      FLASK_ENV: "development"
+      FLASK_HOST: "0.0.0.0"
+      FLASK_DEBUG: true
     container_name: webapp
     ports:
       - 8080:8080
@@ -199,6 +203,8 @@ services:
       - dagster-dagit
     stdin_open: true
     tty: true
+    volumes:
+      - ./webapp/backend:/backend
 
   webapp-postgres:
     image: postgres:11
