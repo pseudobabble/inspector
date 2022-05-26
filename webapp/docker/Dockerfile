@@ -17,11 +17,11 @@ RUN cd /usr/local/bin \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
-COPY ./backend/requirements.txt /backend/requirements.txt
+COPY ./requirements.txt /backend/requirements.txt
 RUN pip install -r /backend/requirements.txt
 
 # Copy polling entrypoint script & make executable
-COPY ./backend/docker/await_upstream.sh /start.sh
+COPY ./docker/await_upstream.sh /start.sh
 RUN chmod +x /start.sh
 
 # Switch to the app directory
