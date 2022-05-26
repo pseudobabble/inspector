@@ -197,7 +197,7 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ./webapp/backend:/backend
+      - ./backend:/backend
 
   webapp-postgres:
     image: postgres:11
