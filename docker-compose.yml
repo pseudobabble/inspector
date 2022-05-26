@@ -223,8 +223,8 @@ services:
 
   nginx-fe:
     build:
-      context: ./webapp
-      dockerfile: Dockerfile_nginx_ui
+      context: ./nginx
+      dockerfile: docker/Dockerfile
     container_name: nginx-fe
     ports:
       - 80:80 # Is this right?
