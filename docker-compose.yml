@@ -225,6 +225,8 @@ services:
       - internal
     depends_on:
       - dagster-dagit
+    volumes:
+      - ./nginx/ui/demo:/usr/share/nginx/html/demo
 
 networks:
   internal:
