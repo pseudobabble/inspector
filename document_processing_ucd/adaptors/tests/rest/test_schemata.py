@@ -1,8 +1,6 @@
 import unittest
 
-from adaptors.rest.schemata import (
-    RawDocument,
-)
+from adaptors.rest.schemata import RawDocument
 
 
 class TestDocumentBuilder(unittest.TestCase):

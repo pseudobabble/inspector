@@ -57,8 +57,6 @@ class Documents(Resource):
             many = isinstance(documents, list)
             documents_response = self.document_schema.dump(documents, many=many)
 
-        print("ARRIVED")
-        print(documents_response)
         return documents_response
 
     @transaction
@@ -116,8 +114,6 @@ class Upload(Resource):
         file_data = [
             {"filename": f.filename, "content": f.read()} for f in uploaded_files
         ]
-        print(file_data)
-        print(type(file_data[0]["content"]))
 
         document_ids = []
         for datum in file_data:

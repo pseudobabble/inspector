@@ -1,9 +1,8 @@
 import enum
 
 import nltk
-from haystack.nodes import PreProcessor, FARMReader, TfidfRetriever
-from dagster import resource, Array
-
+from dagster import Array, resource
+from haystack.nodes import FARMReader, PreProcessor, TfidfRetriever
 
 nltk.download("punkt")
 

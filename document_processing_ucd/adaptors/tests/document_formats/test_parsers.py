@@ -1,15 +1,13 @@
-import unittest
-from unittest.mock import Mock, patch
 import shlex
+import unittest
 from pathlib import Path
+from unittest.mock import Mock, patch
 
-from adaptors.document_formats.parsers import (
-    WordProcessorXmlParser,
-    WordProcessorTextParser,
-    ParsedFile,
-    ParsedFileCollection,
-    ParserCoordinator,
-)
+from adaptors.document_formats.parsers import (ParsedFile,
+                                               ParsedFileCollection,
+                                               ParserCoordinator,
+                                               WordProcessorTextParser,
+                                               WordProcessorXmlParser)
 
 
 class TestFileParsers(unittest.TestCase):

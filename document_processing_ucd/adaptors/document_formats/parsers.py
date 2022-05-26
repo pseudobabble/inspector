@@ -3,13 +3,13 @@ This module contains classes for parsing various file formats
 into more useful forms,usually text extraction, maybe xml
 conversion, etc
 """
-from typing import Dict, List, Any, Union, Optional
-from abc import abstractmethod
+import os
 import shlex
 import subprocess
-from tempfile import NamedTemporaryFile
+from abc import abstractmethod
 from pathlib import Path
-import os
+from tempfile import NamedTemporaryFile
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 

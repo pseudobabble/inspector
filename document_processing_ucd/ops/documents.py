@@ -125,7 +125,7 @@ def get_raw_documents(context):
 
 
 @op(required_resource_keys={"raw_documents_repository"})
-def update_documents(context, ml_documents: List[dict]):
+def update_documents(context, ml_documents: List[Document]):
     logger = context.log
 
     raw_documents_repository = context.resources.raw_documents_repository
@@ -159,19 +159,22 @@ def preprocess_raw_documents(context, raw_text_documents: List[dict]):
 
 
 @op(required_resource_keys={"document_store"})
-def save_ml_documents_to_document_store(context, preprocessed_documents: List[dict]):
+def save_ml_documents_to_document_store(
+    context,
+    preprocessed_documents: List[Document],
+):
     logger = context.log
 
     document_store = context.resources.document_store
 
     for doc in preprocessed_documents:
-        doc["id"] = md5(doc["content"].encode("utf-8")).hexdigest()
+        doc.id = md5(doc.content.encode("utf-8")).hexdigest()
 
     document_store.write_documents(preprocessed_documents)
     logger.info(
         "Updating documents with %s MLDocuments: %s",
         len(preprocessed_documents),
-        [d["id"] for d in preprocessed_documents],
+        [d.id for d in preprocessed_documents],
     )
 
     return preprocessed_documents

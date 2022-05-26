@@ -17,11 +17,14 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
 
 WORKDIR /opt/dagster/app
 
-# Add repository code
-COPY ./ ./
+# Copy dependencies conf repository code
+COPY ./requirements.txt ./requirements.txt
 
 # Install python dependencies
 RUN pip --no-input install -r requirements.txt
+
+# Pull the source code
+COPY ./ ./
 
 # Run dagster gRPC server on port 4000
 EXPOSE 4000

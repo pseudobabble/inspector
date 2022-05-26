@@ -1,10 +1,12 @@
 import json
+from dataclasses import asdict
 from typing import List
 
 import requests
 from dagster import resource
+from haystack.schema import Document
 
-from adaptors import DocumentToPipeline, PipelineToMLDocument, MLDocument
+from adaptors import DocumentToPipeline, PipelineToMLDocument
 
 
 class RawDocumentsRepository:
@@ -33,8 +35,9 @@ class RawDocumentsRepository:
 
         return raw_documents
 
-    def update_documents(self, ml_documents: List[MLDocument]):
+    def update_documents(self, ml_documents: List[Document]):
         # TODO: do we want to keep sending the whole document, or just ids?
+        ml_documents = [asdict(d) for d in ml_documents]
         update_response = self.client.patch(
             self.url,
             json=self.pipeline_to_document_schema.dump(ml_documents, many=True),

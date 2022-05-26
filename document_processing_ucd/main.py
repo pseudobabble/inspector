@@ -1,24 +1,17 @@
 """This module is the top level for document processing pipeline code"""
-from dagster import repository, job
 import nltk
+from dagster import job, repository
 
-from resources.webapp import raw_documents_repository
-from resources.files import file_parser, blob_client
+from ops.documents import (docs_to_text, get_raw_documents,
+                           preprocess_raw_documents, refine_candidates,
+                           retrieve_candidates,
+                           save_ml_documents_to_document_store,
+                           store_converted_files, update_documents,
+                           write_input_files)
+from resources.components import preprocessor, reader, retriever
+from resources.files import blob_client, file_parser
 from resources.persistence import sql_document_store
-from resources.components import preprocessor, retriever, reader
-
-from ops.documents import (
-    get_raw_documents,
-    preprocess_raw_documents,
-    update_documents,
-    save_ml_documents_to_document_store,
-    retrieve_candidates,
-    refine_candidates,
-    write_input_files,
-    store_converted_files,
-    docs_to_text,
-)
-
+from resources.webapp import raw_documents_repository
 
 nltk.download("punkt")
 

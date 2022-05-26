@@ -1,6 +1,6 @@
-from abc import abstractmethod
-import pickle
 import io
+import pickle
+from abc import abstractmethod
 
 from minio import Minio
 
