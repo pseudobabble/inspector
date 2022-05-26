@@ -89,7 +89,7 @@ services:
   dagster-ucd:
     build:
       context: ./dagster-docker
-      dockerfile: docker/user_code.Dockerfile
+      dockerfile: Dockerfile_user_code
     container_name: dagster-ucd
     image: dagster-ucd_image
     restart: always
@@ -127,7 +127,7 @@ services:
   dagster-dagit:
     build:
       context: ./dagster-docker
-      dockerfile: docker/dagster.Dockerfile
+      dockerfile: Dockerfile_dagster
     entrypoint: ["dagit", "-h", "0.0.0.0", "-p", "3000", "-w", "workspace.yaml"]
     container_name: dagster-dagit
     expose:
@@ -151,7 +151,7 @@ services:
   dagster-daemon:
     build:
       context: ./dagster-docker
-      dockerfile: docker/dagster.Dockerfile
+      dockerfile: Dockerfile_dagster
     entrypoint:
       - dagster-daemon
       - run
@@ -197,7 +197,7 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ./backend:/backend
+      - ./webapp:/backend
 
   webapp-postgres:
     image: postgres:11
