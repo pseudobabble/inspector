@@ -89,7 +89,7 @@ services:
   dagster-ucd:
     build:
       context: ./dagster-docker
-      dockerfile: Dockerfile_user_code
+      dockerfile: docker/user_code.Dockerfile
     container_name: dagster-ucd
     image: dagster-ucd_image
     restart: always
@@ -127,15 +127,8 @@ services:
   dagster-dagit:
     build:
       context: ./dagster-docker
-      dockerfile: Dockerfile_dagster
-    entrypoint:
-      - dagit
-      - -h
-      - "0.0.0.0"
-      - -p
-      - "3000"
-      - -w
-      - workspace.yaml
+      dockerfile: docker/dagster.Dockerfile
+    entrypoint: ["dagit", "-h", "0.0.0.0", "-p", "3000", "-w", "workspace.yaml"]
     container_name: dagster-dagit
     expose:
       - "3000"
@@ -158,7 +151,7 @@ services:
   dagster-daemon:
     build:
       context: ./dagster-docker
-      dockerfile: Dockerfile_dagster
+      dockerfile: docker/dagster.Dockerfile
     entrypoint:
       - dagster-daemon
       - run
@@ -180,7 +173,7 @@ services:
   webapp:
     build:
       context: ./webapp
-      dockerfile: backend/docker/Dockerfile
+      dockerfile: docker/Dockerfile
     environment:
       POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
       POSTGRES_USER: "webapp_postgres_user"
@@ -219,7 +212,7 @@ services:
     networks:
       - internal
     volumes:
-      - ./webapp/document_store/init-document-store.sh:/docker-entrypoint-initdb.d/1-init-document-store.sh
+      - ./docker/document_store/init-document-store.sh:/docker-entrypoint-initdb.d/1-init-document-store.sh
 
   nginx-fe:
     build:
