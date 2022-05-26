@@ -2,12 +2,15 @@
 from functools import wraps
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import scoped_session, sessionmaker
 
-engine = create_engine('postgresql://webapp_postgres_user:webapp_postgres_password@webapp-postgres:5432/webapp_postgres_db')
+engine = create_engine(
+    "postgresql://webapp_postgres_user:webapp_postgres_password@webapp-postgres:5432/webapp_postgres_db"
+)
 session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
+
 
 def get_session():
     """

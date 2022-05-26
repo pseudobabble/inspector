@@ -1,8 +1,4 @@
-from datetime import datetime
 import json
-import logging
-from sys import stdout
-from hashlib import md5
 
 import flask
 from flask_restful import Resource
@@ -10,32 +6,28 @@ from marshmallow import Schema
 
 from infrastructure.dagster_client import DagsterClient
 from infrastructure.repository import transaction
-from infrastructure.blob_client import BlobClient, MinioBlobClient
+
 from .builder import DocumentBuilder
-from .schemata import Document, RawDocument, MLDocument, DocumentToPipeline, PipelineToMLDocument
 from .repository import DocumentRepository
-
-
+from .schemata import Document, DocumentToPipeline, PipelineToMLDocument, RawDocument
 
 
 class Documents(Resource):
-    '''
+    """
     The Documents resource represents the ways that Document objects can be
     retrieved from the api
-    '''
-    routes = [
-        "/documents",
-        "/documents/string:id"
-    ]
+    """
+
+    routes = ["/documents", "/documents/string:id"]
 
     def __init__(
-            self,
-            document_builder: DocumentBuilder = DocumentBuilder(),
-            document_schema: Schema = Document(),
-            document_repository: DocumentRepository = DocumentRepository(),
-            raw_document_schema: RawDocument = RawDocument(),
-            document_to_pipeline_schema: DocumentToPipeline = DocumentToPipeline(),
-            pipeline_to_ml_document_schema: PipelineToMLDocument = PipelineToMLDocument()
+        self,
+        document_builder: DocumentBuilder = DocumentBuilder(),
+        document_schema: Schema = Document(),
+        document_repository: DocumentRepository = DocumentRepository(),
+        raw_document_schema: RawDocument = RawDocument(),
+        document_to_pipeline_schema: DocumentToPipeline = DocumentToPipeline(),
+        pipeline_to_ml_document_schema: PipelineToMLDocument = PipelineToMLDocument(),
     ):
         self.document_builder = document_builder
         self.document_schema = document_schema
@@ -53,17 +45,19 @@ class Documents(Resource):
         :return: dict
         """
         request_args = flask.request.args
-        if request_args.get('ids'):
-            document_ids = json.loads(request_args['ids'])
+        if request_args.get("ids"):
+            document_ids = json.loads(request_args["ids"])
             documents = self.document_repository.get_by_ids(document_ids)
             many = isinstance(documents, list)
-            documents_response = self.document_to_pipeline_schema.dump(documents, many=many)
+            documents_response = self.document_to_pipeline_schema.dump(
+                documents, many=many
+            )
         else:
             documents = self.document_repository.get_all()
             many = isinstance(documents, list)
             documents_response = self.document_schema.dump(documents, many=many)
 
-        print('ARRIVED')
+        print("ARRIVED")
         print(documents_response)
         return documents_response
 
@@ -76,15 +70,13 @@ class Documents(Resource):
         """
         data_dict = flask.request.get_json()
         many = isinstance(data_dict, list)
-        raw_document = self.raw_document_schema.loads(data_dict, many=many)
+        raw_document = self.raw_document_schema.load(data_dict, many=many)
         try:
             document = self.document_builder.build(raw_document)
 
             response = self.document_schema.dump(document)
-        except Exception as e: # TODO
-            response = {
-                f"Exception: {e}": 400
-            }
+        except Exception as e:  # TODO
+            response = {f"Exception: {e}": 400}
 
         return response
 
@@ -97,8 +89,7 @@ class Documents(Resource):
         :return: dict
         """
         data_dict = flask.request.get_json()
-        many = isinstance(data_dict, list) # TODO: fix naming here
-        ml_document_data = self.pipeline_to_ml_document_schema.load(data_dict, many=many)
+        many = isinstance(data_dict, list)  # TODO: fix naming here
         documents = self.document_builder.update_documents_with_ml_documents(data_dict)
         response = self.document_schema.dump(documents, many=many)
 
@@ -110,10 +101,10 @@ class Upload(Resource):
     routes = ["/documents/upload"]
 
     def __init__(
-            self,
-            document_builder: DocumentBuilder = DocumentBuilder(),
-            document_repository: DocumentRepository = DocumentRepository(),
-            dagster_client: DagsterClient = DagsterClient()
+        self,
+        document_builder: DocumentBuilder = DocumentBuilder(),
+        document_repository: DocumentRepository = DocumentRepository(),
+        dagster_client: DagsterClient = DagsterClient(),
     ):
         self.document_builder = document_builder
         self.document_repository = document_repository
@@ -123,22 +114,20 @@ class Upload(Resource):
     def post(self):
         uploaded_files = flask.request.files.getlist("file")
         file_data = [
-            {'filename': f.filename, 'content': f.read()}
-            for f in uploaded_files
+            {"filename": f.filename, "content": f.read()} for f in uploaded_files
         ]
         print(file_data)
-        print(type(file_data[0]['content']))
+        print(type(file_data[0]["content"]))
 
         document_ids = []
         for datum in file_data:
-            document = self.document_builder.build({
-                'filename': datum['filename'],
-                'content': datum['content']
-            })
+            document = self.document_builder.build(
+                {"filename": datum["filename"], "content": datum["content"]}
+            )
             document_ids.append(document.id)
             print(document.raw_content)
 
-        return {'success': 200}
+        return {"success": 200}
 
 
 # class Trigger(Resource):

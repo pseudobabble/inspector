@@ -27,18 +27,25 @@ class DocumentRepository(SqlAlchemyAdaptor):
         return self.session.query(self.entity).all()
 
     def get_by_hash(self, content_hash: str) -> Document:
-        return self.session.query(self.entity).filter(self.entity.content_hash==content_hash).first()
+        return (
+            self.session.query(self.entity)
+            .filter(self.entity.content_hash == content_hash)
+            .first()
+        )
 
     def get_by_ids(self, document_ids: List[int]):
-        return self.session.query(self.entity).filter(self.entity.id.in_(document_ids)).all()
+        return (
+            self.session.query(self.entity)
+            .filter(self.entity.id.in_(document_ids))
+            .all()
+        )
 
     def save_multiple(self, documents: List[Document]):
         for document in documents:
             if not isinstance(document, self.entity):
                 raise UnexpectedEntityException(
-                    '{} is not a {}'.format(
-                        entity.__class__.__name__,
-                        self.entity.__name__
+                    "{} is not a {}".format(
+                        entity.__class__.__name__, self.entity.__name__
                     )
                 )
 

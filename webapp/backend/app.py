@@ -1,9 +1,10 @@
 import os
+
 from flask import Flask
 from flask_restful import Api
 
+from document_processing.resources import Documents, Upload
 from infrastructure import repository
-from document_processing import Documents, Upload
 
 repository.create_all()
 

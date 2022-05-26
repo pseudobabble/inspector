@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
+from . import get_session
 from .base_adaptor import BaseAdaptor
-
 from .exception.entity_not_found import EntityNotFoundException
 from .exception.unexpected_entity import UnexpectedEntityException
-
-from . import get_session
 
 
 class SqlAlchemyAdaptor(BaseAdaptor):
@@ -44,10 +42,7 @@ class SqlAlchemyAdaptor(BaseAdaptor):
         entity = self.get_by_id(entity_id)
         if not entity:
             raise EntityNotFoundException(
-                '{} with id {} was not found.'.format(
-                    self.entity.__name__,
-                    entity_id
-                )
+                "{} with id {} was not found.".format(self.entity.__name__, entity_id)
             )
 
         return entity
@@ -61,10 +56,7 @@ class SqlAlchemyAdaptor(BaseAdaptor):
         """
         if not isinstance(entity, self.entity):
             raise UnexpectedEntityException(
-                '{} is not a {}'.format(
-                    entity.__class__.__name__,
-                    self.entity.__name__
-                )
+                "{} is not a {}".format(entity.__class__.__name__, self.entity.__name__)
             )
 
         self.session.add(entity)
