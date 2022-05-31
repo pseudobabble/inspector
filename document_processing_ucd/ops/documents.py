@@ -244,4 +244,4 @@ def semantic_refine_candidates(context, candidate_documents: List[Document]):
 
     logger.info("Refined query results: %s", result_log)
 
-    return query_results
+    return None
