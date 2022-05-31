@@ -2,10 +2,14 @@ import os
 from hashlib import md5
 from pathlib import Path
 from typing import List
+import itertools
 
 from dagster import Array, op
 from dagster_shell import create_shell_command_op
 from haystack.schema import Document
+import torch
+from sentence_transformers import SentenceTransformer, util
+
 
 # op which just runs a shell command
 convert_input_doc_files = create_shell_command_op(
@@ -217,3 +221,27 @@ def retrieve_candidates(context):
     )
 
     return candidates
+
+@op(config_schema={"query": str, "top_k": int})
+def semantic_refine_candidates(context, candidate_documents: List[Document]):
+    logger = context.log
+
+    query = context.op_config["query"]
+    top_k = context.op_config["top_k"]
+    logger.info("Refining candidates for query '%s'")
+
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    corpus = [d.content for d in candidate_documents]
+    corpus_embeddings = model.encode(corpus, convert_to_tensor=True)
+    query_embedding = model.encode(query, convert_to_tensor=True)
+
+    cos_scores = util.cos_sim(query_embedding, corpus_embeddings)[0]
+    query_results = torch.topk(cos_scores, k=top_k)
+
+    result_log = ""
+    for score, idx in zip(top_results[0], top_results[1]):
+        result_log += "\n\n{}, {(Score: {:.4f})}".format(corpus[idx], score)
+
+    logger.info("Refined query results: %s", result_log)
+
+    return query_results

@@ -7,7 +7,7 @@ from ops.documents import (docs_to_text, get_raw_documents,
                            retrieve_candidates,
                            save_ml_documents_to_document_store,
                            store_converted_files, update_documents,
-                           write_input_files)
+                           write_input_files, semantic_refine_candidates)
 from resources.components import preprocessor, reader, retriever
 from resources.files import blob_client, file_parser
 from resources.persistence import sql_document_store
@@ -47,7 +47,7 @@ def preprocess_documents():
 )
 def answer_query():
     candidates = retrieve_candidates()
-    refine_candidates(candidates)
+    semantic_refine_candidates(candidates)
 
 
 @repository
