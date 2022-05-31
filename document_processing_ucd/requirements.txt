@@ -1,0 +1,9 @@
+dagster 
+dagster-postgres 
+dagster-docker 
+dagster-shell 
+requests 
+farm-haystack 
+marshmallow 
+textract 
+minio

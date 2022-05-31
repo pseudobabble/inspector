@@ -106,8 +106,8 @@ services:
 
   dagster-ucd-document-processing:
     build:
-      context: ./webapp/backend
-      dockerfile: ./document_processing/document_processing_ucd/Dockerfile_document_processing_ucd
+      context: ./document_processing_ucd
+      dockerfile: docker/Dockerfile
     container_name: dagster-ucd-document-processing
     image: dagster-ucd_image-document-processing
     restart: always
@@ -128,14 +128,7 @@ services:
     build:
       context: ./dagster-docker
       dockerfile: Dockerfile_dagster
-    entrypoint:
-      - dagit
-      - -h
-      - "0.0.0.0"
-      - -p
-      - "3000"
-      - -w
-      - workspace.yaml
+    entrypoint: ["dagit", "-h", "0.0.0.0", "-p", "3000", "-w", "workspace.yaml"]
     container_name: dagster-dagit
     expose:
       - "3000"
@@ -180,7 +173,7 @@ services:
   webapp:
     build:
       context: ./webapp
-      dockerfile: backend/docker/Dockerfile
+      dockerfile: docker/Dockerfile
     environment:
       POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
       POSTGRES_USER: "webapp_postgres_user"
@@ -204,7 +197,7 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ./webapp/backend:/backend
+      - ./webapp:/backend
 
   webapp-postgres:
     image: postgres:11
@@ -219,12 +212,12 @@ services:
     networks:
       - internal
     volumes:
-      - ./webapp/document_store/init-document-store.sh:/docker-entrypoint-initdb.d/1-init-document-store.sh
+      - ./docker/document_store/init-document-store.sh:/docker-entrypoint-initdb.d/1-init-document-store.sh
 
   nginx-fe:
     build:
-      context: ./webapp
-      dockerfile: Dockerfile_nginx_ui
+      context: ./nginx
+      dockerfile: docker/Dockerfile
     container_name: nginx-fe
     ports:
       - 80:80 # Is this right?
@@ -232,6 +225,8 @@ services:
       - internal
     depends_on:
       - dagster-dagit
+    volumes:
+      - ./nginx/ui/demo:/usr/share/nginx/html/demo
 
 networks:
   internal:
