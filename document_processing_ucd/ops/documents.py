@@ -228,7 +228,7 @@ def semantic_refine_candidates(context, candidate_documents: List[Document]):
 
     query = context.op_config["query"]
     top_k = context.op_config["top_k"]
-    logger.info("Refining candidates for query '%s'")
+    logger.info("Refining candidates for query '%s'", query)
 
     model = SentenceTransformer('all-MiniLM-L6-v2')
     corpus = [d.content for d in candidate_documents]
@@ -239,8 +239,8 @@ def semantic_refine_candidates(context, candidate_documents: List[Document]):
     query_results = torch.topk(cos_scores, k=top_k)
 
     result_log = ""
-    for score, idx in zip(top_results[0], top_results[1]):
-        result_log += "\n\n{}, {(Score: {:.4f})}".format(corpus[idx], score)
+    for score, idx in zip(query_results[0], query_results[1]):
+        result_log += "\n\n{}, (Score: {:.4f})".format(corpus[idx], score)
 
     logger.info("Refined query results: %s", result_log)
 
