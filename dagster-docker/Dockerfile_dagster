@@ -10,7 +10,8 @@ RUN pip install \
     dagster-postgres \
     dagster-docker \
     markupsafe==2.0.1 \
-    ipython_genutils
+    ipython_genutils \
+    'protobuf<=3.19'
 
 # Set $DAGSTER_HOME and copy dagster instance and workspace YAML there
 ENV DAGSTER_HOME=/opt/dagster/dagster_home/
