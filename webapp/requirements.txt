@@ -7,6 +7,7 @@ pandas
 sqlalchemy-utils
 dagster==0.14.0
 dagster_graphql==0.14.0
+protobuf<=3.19.0
 markupsafe==2.0.1
 pydantic
 minio
