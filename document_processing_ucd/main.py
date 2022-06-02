@@ -6,12 +6,12 @@ from ops.documents import (docs_to_text, get_raw_documents,
                            preprocess_raw_documents, refine_candidates,
                            retrieve_candidates,
                            save_ml_documents_to_document_store,
-                           store_converted_files, update_documents,
-                           write_input_files, semantic_refine_candidates)
+                           semantic_refine_candidates, store_converted_files,
+                           update_documents, write_input_files)
 from resources.components import preprocessor, reader, retriever
 from resources.files import blob_client, file_parser
 from resources.persistence import sql_document_store
-from resources.webapp import raw_documents_repository
+from resources.webapp import answer_client, raw_documents_repository
 
 nltk.download("punkt")
 
@@ -43,6 +43,7 @@ def preprocess_documents():
         "raw_documents_repository": raw_documents_repository,
         "retriever": retriever,
         "reader": reader,
+        "answer_client": answer_client,
     }
 )
 def answer_query():

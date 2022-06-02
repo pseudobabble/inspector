@@ -4,7 +4,7 @@ import torch
 from sentence_transformers import SentenceTransformer, util
 
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Two lists of sentences
 queries = """
@@ -16,7 +16,11 @@ fluent in Georgian (at least B2 level);
 At least twelve (12) years of experience in public policies to support economic development;
 At least one professional experience with an EU budget support review in the field since 2015.
 fully fluent in English and demonstrate both verbal and written skills in the language (C2 level);
-""".replace('• ', '').split(';')
+""".replace(
+    "• ", ""
+).split(
+    ";"
+)
 
 corpus = """
     8. Other Skills: Project Framework & Analysis (LFA); Research methodology; Academic Management; Word; Excel; Project, Power point
@@ -298,7 +302,11 @@ NGO to support mainly black primary school teachers
     • ESP materials development coordinator.
     • English as a Foreign (EFL)/Second Language (ESL) – Proficiency and First Certificate level
 
-""".replace('    • ', '').split('\n')
+""".replace(
+    "    • ", ""
+).split(
+    "\n"
+)
 corpus_embeddings = model.encode(corpus, convert_to_tensor=True)
 
 top_k = min(2, len(corpus))

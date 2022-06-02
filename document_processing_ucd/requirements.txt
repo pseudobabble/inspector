@@ -7,3 +7,4 @@ farm-haystack
 marshmallow 
 textract 
 minio
+resourceez

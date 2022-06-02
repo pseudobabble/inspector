@@ -4,16 +4,15 @@ import requests
 
 @op
 def get_data():
-    return requests.get('https://jsonplaceholder.typicode.com/todos/1').json()
+    return requests.get("https://jsonplaceholder.typicode.com/todos/1").json()
 
 
 @op
 def process_data(data: dict):
-    if 'title' in data:
-        data['title'] = data['title'] + '_modified'
+    if "title" in data:
+        data["title"] = data["title"] + "_modified"
 
     return data
-
 
 
 @job
