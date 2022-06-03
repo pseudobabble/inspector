@@ -1,6 +1,5 @@
-from dagster import resource
-
 from adaptors import BlobClient, Parser
+from dagster import resource
 
 
 @resource(

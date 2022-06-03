@@ -186,6 +186,8 @@ services:
       FLASK_ENV: "development"
       FLASK_HOST: "0.0.0.0"
       FLASK_DEBUG: true
+      GRAPHQL_HOST: "dagster-dagit"
+      GRAPHQL_PORT: 3000
     container_name: webapp
     ports:
       - 8080:8080

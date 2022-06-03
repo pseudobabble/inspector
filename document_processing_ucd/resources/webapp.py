@@ -3,11 +3,10 @@ from dataclasses import asdict
 from typing import List
 
 import requests
-from dagster import resource
-from haystack.schema import Document
-
 from adaptors import DocumentToPipeline, PipelineToMLDocument
 from adaptors.rest.webhook import AnswerClient
+from dagster import resource
+from haystack.schema import Document
 
 
 class RawDocumentsRepository:
