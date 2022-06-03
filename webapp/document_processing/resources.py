@@ -1,15 +1,22 @@
 import json
+import logging
+import os
+import time
+from datetime import datetime
 
 import flask
+from flask import request
 from flask_restful import Resource
+from infrastructure.dagster_client import DagsterClient, default_client
+from infrastructure.repository import transaction
 from marshmallow import Schema
 
-from infrastructure.dagster_client import DagsterClient
-from infrastructure.repository import transaction
-
 from .builder import DocumentBuilder
+from .job_execution import semantic_search
 from .repository import DocumentRepository
 from .schemata import Document, DocumentToPipeline, PipelineToMLDocument, RawDocument
+
+_logger = logging.getLogger(__package__)
 
 
 class Documents(Resource):
@@ -126,17 +133,105 @@ class Upload(Resource):
         return {"success": 200}
 
 
-# class Trigger(Resource):
-#     routes = ['/trigger']
-#     def post(self):
-#         """dev method to trigger runs"""
-#         config = flask.request.get_json()
-#         client = DagsterClient()
+class AnswerHook(Resource):
+    routes = ["/hooks/semantic-search"]
 
-#         client.trigger_run(
-#             job_name=config['job_name'],
-#             repository_location_name=config['repository_location_name'],
-#             repository_name=config['repository_name'],
-#             run_config=config['run_config'],
-#             mode=config['mode']
-#         )
+    @transaction
+    def post(self):
+        body = request.get_json()
+        with open("/tmp/answers.json", "w") as file:
+            json.dump(body, file, indent=4)
+        return {"success": 200}
+
+
+class DataUpdate(Resource):
+    routes = ["/semantic-search/results"]
+
+    def get(self):
+        """
+        Returns 'data.txt' content when the resource has
+        changed after the request time
+        """
+        while not os.path.exists("/tmp/answers.json"):
+            _logger.warning("checking for answers.json")
+            time.sleep(0.5)
+
+        _logger.warning("WOHOOOOO found it, sending...")
+
+        with open("/tmp/answers.json", "r") as data:
+            content = data.read()
+
+        _logger.warning("deleting the old file")
+        os.unlink("/tmp/answers.json")
+
+        _logger.critical("SUCCESS")
+        return {
+            "content": content,
+            "date": datetime.now().strftime("%Y/%m/%d %H:%M:%S"),
+        }
+
+
+json_ = """
+{
+  "ops": {
+    "retrieve_candidates": {
+      "config": {
+        "query": "topic outside ",
+        "top_k": 30
+      }
+    },
+    "semantic_refine_candidates": {
+      "config": {
+        "query": "lots of processes interface with resources outside of their silicon prison",
+        "top_k": 2
+      }
+    }
+  },
+  "resources": {
+    "document_store": {
+      "config": {
+        "url": "postgresql://webapp_postgres_user:webapp_postgres_password@webapp-postgres:5432/document_store"
+      }
+    },
+    "reader": {
+      "config": {
+        "model_name": "deepset/roberta-base-squad2",
+        "use_gpu": true
+      }
+    },
+    "answer_client": {
+      "config": {
+        "url": "http://172.17.0.1:80/api/hooks/semantic-search"
+      }
+    }
+  }
+}
+"""
+
+
+class Trigger(Resource):
+    routes = ["/trigger"]
+
+    def get(self):
+        """dev method to trigger runs"""
+        config = {}
+        config["run_config"] = json.loads(json_)
+        client = default_client()
+        config.update(
+            {
+                # "job_name": "answer_query",
+                # "repository_location_name": "dagster-ucd-document-processing",
+                # "repository_name": "__repository__answer_query",
+                # "mode": "default"
+            }
+        )
+
+        client.submit_job_execution(
+            "answer_query", run_config=semantic_search.run_config()
+        )
+        #    job_name=config['job_name'],
+        #    repository_location_name=config['repository_location_name'],
+        #    repository_name=config['repository_name'],
+        #    run_config=config['run_config'],
+        #    mode=config['mode']
+        # )

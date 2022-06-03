@@ -1,9 +1,15 @@
 import os
 
+from document_processing import utils
+from document_processing.resources import (
+    AnswerHook,
+    DataUpdate,
+    Documents,
+    Trigger,
+    Upload,
+)
 from flask import Flask
 from flask_restful import Api
-
-from document_processing.resources import Documents, Upload
 from infrastructure import repository
 
 repository.create_all()
@@ -22,7 +28,9 @@ api.add_resource(
     methods=["PATCH"],
 )
 api.add_resource(Upload, *Upload.routes)
-# api.add_resource(Trigger, *Trigger.routes)
+api.add_resource(AnswerHook, *AnswerHook.routes, methods=["POST"])
+api.add_resource(DataUpdate, *DataUpdate.routes, methods=["GET"])
+api.add_resource(Trigger, *Trigger.routes, methods=["GET"])
 
 
 _env = lambda init, key, default=None: init(os.getenv(key, default))
@@ -38,7 +46,7 @@ A convenience function for expressing typed env config consistently
 
 if __name__ == "__main__":
     app.run(
-        host=_env(str, "FLASK_HOST", default="webapp"),
-        port=_env(int, "FLASK_PORT", default="8080"),
-        debug=_env(bool, "FLASK_DEBUG", default=False),
+        host=utils.env(str, "FLASK_HOST", default="webapp"),
+        port=utils.env(int, "FLASK_PORT", default="8080"),
+        debug=utils.env(bool, "FLASK_DEBUG", default=False),
     )

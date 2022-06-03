@@ -1,8 +1,7 @@
+from infrastructure import repository
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import LargeBinary
-
-from infrastructure import repository
 
 
 class Document(repository.Base):

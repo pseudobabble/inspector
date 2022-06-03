@@ -1,14 +1,27 @@
+from __future__ import annotations
+
 from dagster_graphql import DagsterGraphQLClient, DagsterGraphQLClientError
+from document_processing import utils
+
+
+def default_client() -> DagsterGraphQLClient:
+    """
+    This returns a preconfigured DagsterGraphQLClient instance and is designed to fall back to dev
+    envirnoment defaults if not configured.
+
+    :return: The configured client instance
+    """
+    return DagsterGraphQLClient(
+        utils.env(str, "GRAPHQL_HOST", default="dagster-dagit"),
+        utils.env(int, "GRAPHQL_PORT", default=3000),
+    )
 
 
 class DagsterClient:
-    def __init__(
-        self,
-        graphql_client: DagsterGraphQLClient = DagsterGraphQLClient(
-            hostname="dagster-dagit", port_number=3000
-        ),
-    ):
-        self.graphql_client = graphql_client
+    _client: DagsterGraphQLClient
+
+    def __init__(self, client=default_client()):
+        self._client = client
 
     def trigger_run(
         self,

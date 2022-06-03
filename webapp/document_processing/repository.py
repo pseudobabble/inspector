@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import func
-
 from infrastructure.repository.sqlalchemy_adaptor import SqlAlchemyAdaptor
+from sqlalchemy import func
 
 from .models import Document
 
