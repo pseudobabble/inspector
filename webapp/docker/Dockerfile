@@ -5,10 +5,11 @@ RUN apt-get update \
     && apt-get install -y software-properties-common\
     && apt-add-repository -y ppa:libreoffice \
     && apt-get update \
-    && apt-get install -y libreoffice python3-pip python3-dev
+    && apt-get install -y libreoffice python3-pip python3-dev pkg-config libcairo2 libcairo2-dev
+
 
 # For polling upstream services
-RUN apt-get install -y netcat
+RUN apt-get install -y netcat 
 
 # Upgrade pip
 RUN cd /usr/local/bin \
