@@ -1,1 +1,42 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Demo Page</title>
+    <script src="jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">  
+        /**
+         * Simple long polling client based on JQuery
+         */
+
+        /**
+         * Request an update to the server and once it has answered, then update
+         * the content and request again.
+         * The server is supposed to response when a change has been made on data.
+         */
+        function update() {
+            $.ajax({
+                url: '/api/queries/1',
+                success:  function(data) {
+                    $('#result').text(JSON.stringify(data));
+                    update();
+                },
+                timeout: 20000 //If timeout is reached run again
+            });
+        }
+
+
+        $(document).ready(function() {
+                    document.getElementById('button-0').onclick = update;
+        });    
+    </script>
+  </head>
+  <body>
+    <div>
+        <button id="button-0" type="button">Click me!</button>
+        <pre id="result">
+        </pre>
+    </div>
+  </body>
+</html>

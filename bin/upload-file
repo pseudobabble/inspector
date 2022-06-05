@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# Input validation
+src_filename=$1
+if [[ $src_filename == '' ]]; then
+    echo "Provide a non-empty filename"
+    exit 1
+fi
+
+# Cut out all the text following the last '.' to the end of the filename to
+# recover just the extension.
+src_ext="$(echo $src_filename | grep -o '\.[^.]*$' | cut -c2-)"
+
+# Use python to generate a uuid for the upload name to guarantee uniqueness
+dst_filename=$(python -c 'import uuid; print(f"{uuid.uuid4()}", end="")')
+
+# construct the filename from the uuid and the extension
+dst_filename="${dst_filename}.${src_ext}"
+
+# upload the file
+http -f :80/api/documents/upload filename="$dst_filename" file@$(realpath "${src_filename}")

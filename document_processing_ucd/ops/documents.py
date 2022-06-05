@@ -3,9 +3,12 @@ from hashlib import md5
 from pathlib import Path
 from typing import List
 
+import torch
+from adaptors.rest.webhook import Answer
 from dagster import Array, op
 from dagster_shell import create_shell_command_op
 from haystack.schema import Document
+from sentence_transformers import SentenceTransformer, util
 
 # op which just runs a shell command
 convert_input_doc_files = create_shell_command_op(
@@ -217,3 +220,40 @@ def retrieve_candidates(context):
     )
 
     return candidates
+
+
+@op(
+    config_schema={"query": str, "top_k": int}, required_resource_keys={"answer_client"}
+)
+def semantic_refine_candidates(context, candidate_documents: List[Document]):
+    logger = context.log
+
+    query = context.op_config["query"]
+    top_k = context.op_config["top_k"]
+    logger.info("Refining candidates for query '%s'", query)
+
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    corpus = [d.content for d in candidate_documents]
+    corpus_embeddings = model.encode(corpus, convert_to_tensor=True)
+    query_embedding = model.encode(query, convert_to_tensor=True)
+
+    cos_scores = util.cos_sim(query_embedding, corpus_embeddings)[0]
+    query_results = torch.topk(cos_scores, k=top_k)
+
+    result_log, answers = "", []
+    for score, idx, *rest in zip(*query_results):
+        snippet = corpus[idx]
+        result_log += "\n\n{}, (Score: {:.4f})\n\n".format(snippet, score)
+        result_log += "=" * 20 + "\n" + " DEBUG OUT"
+        result_log += (
+            "==>  " + ", ".join([repr(item) for item in [score, idx, *rest]]) + "\n"
+        )
+        result_log += "=" * 20 + "\n"
+
+        answers += [Answer(index=repr(idx), score=repr(score), snippet=repr(snippet))]
+    logger.info("Refined query results: %s", result_log)
+
+    client = context.resources.answer_client
+    client.post(answers)
+
+    return None

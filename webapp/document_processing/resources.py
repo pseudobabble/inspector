@@ -1,15 +1,23 @@
+from datetime import datetime
 import json
+import logging
+import os
+import time
 
 import flask
+from flask import request
 from flask_restful import Resource
 from marshmallow import Schema
 
-from infrastructure.dagster_client import DagsterClient
+from infrastructure.dagster_client import DagsterClient, default_client
 from infrastructure.repository import transaction
 
 from .builder import DocumentBuilder
 from .repository import DocumentRepository
 from .schemata import Document, DocumentToPipeline, PipelineToMLDocument, RawDocument
+from .job_execution import semantic_search
+
+_logger = logging.getLogger(__package__)
 
 
 class Documents(Resource):
@@ -111,6 +119,8 @@ class Upload(Resource):
     @transaction
     def post(self):
         uploaded_files = flask.request.files.getlist("file")
+        if not uploaded_files:
+            return {"error": "No file was provided, files must have the key 'file'"}, 422
         file_data = [
             {"filename": f.filename, "content": f.read()} for f in uploaded_files
         ]
@@ -126,17 +136,66 @@ class Upload(Resource):
         return {"success": 200}
 
 
-# class Trigger(Resource):
-#     routes = ['/trigger']
-#     def post(self):
-#         """dev method to trigger runs"""
-#         config = flask.request.get_json()
-#         client = DagsterClient()
+class AnswerHook(Resource):
+    routes = ["/hooks/semantic-search"]
 
-#         client.trigger_run(
-#             job_name=config['job_name'],
-#             repository_location_name=config['repository_location_name'],
-#             repository_name=config['repository_name'],
-#             run_config=config['run_config'],
-#             mode=config['mode']
-#         )
+    @transaction
+    def post(self):
+        body = request.get_json()
+        with open("/tmp/answers.json", "w") as file:
+            json.dump(body, file)
+        return '', 201
+
+
+class UserQuery(Resource):
+    """
+    NOTES:
+    
+    This could become a generic way for query runs to be triggered, depending on the
+    endpoint schema. 
+
+    I think it would be better to use our own abstraction over
+    the terminology that dagster uses, e.g. UserQuery or something. If there are
+    other types of run that the user configures, they should probably use a 
+    different endpoint.
+
+    """
+    routes = ["/queries", "/queries/<int:query_id>"]
+
+    def post(self):
+        """
+        Triggers a semantic_search, in keeping with REST, it returns the id of the created query.
+        """
+        client = default_client()
+        client.submit_job_execution(
+            "answer_query", run_config=semantic_search.run_config()
+        )
+        return {"query_id": 1}, 201
+
+
+    def get(self, query_id=None):
+        """
+        Returns the answers to the user query with the id specified.
+        :return: The content of the answers.
+        """
+        
+        if query_id is None:
+            return '', 404
+
+        _logger.info(
+            f"Received long polling request for results of query with id {query_id}"
+        )
+
+        while not os.path.exists("/tmp/answers.json"):
+            time.sleep(0.5)
+
+
+        with open("/tmp/answers.json", "r") as data:
+            content = data.read()
+
+        os.unlink("/tmp/answers.json")
+
+        return {
+            "content": content,
+            "date": datetime.now().strftime("%Y/%m/%d %H:%M:%S"),
+        }

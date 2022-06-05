@@ -3,10 +3,10 @@ from dataclasses import asdict
 from typing import List
 
 import requests
+from adaptors import DocumentToPipeline, PipelineToMLDocument
+from adaptors.rest.webhook import AnswerClient
 from dagster import resource
 from haystack.schema import Document
-
-from adaptors import DocumentToPipeline, PipelineToMLDocument
 
 
 class RawDocumentsRepository:
@@ -49,3 +49,8 @@ class RawDocumentsRepository:
 @resource(config_schema={"url": str})
 def raw_documents_repository(init_context):
     return RawDocumentsRepository(init_context.resource_config["url"])
+
+
+@resource(config_schema={"url": str})
+def answer_client(init_context):
+    return AnswerClient.configure(init_context.resource_config["url"])
