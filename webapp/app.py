@@ -1,16 +1,33 @@
-import os
+from logging import config
 
-from document_processing import utils
-from document_processing.resources import (
-    AnswerHook,
-    Documents,
-    UserQuery,
-    Upload,
-)
 from flask import Flask
 from flask_restful import Api
 
+from document_processing import utils
+from document_processing.resources import AnswerHook, Documents, Upload, UserQuery
 from infrastructure import repository
+
+# TODO: Move this and any other configuration to its own package.
+config.dictConfig(
+    {
+        "version": 1,
+        "root": {"handlers": ["console"], "level": "DEBUG"},
+        "handlers": {
+            "console": {
+                "formatter": "std_out",
+                "class": "logging.StreamHandler",
+                "level": "DEBUG",
+            }
+        },
+        "formatters": {
+            "std_out": {
+                "format": "%(asctime)s : %(levelname)s : %(module)s : %(funcName)s : %(message)s",
+                "datefmt": "%d-%m-%Y %I:%M:%S",
+            }
+        },
+    }
+)
+
 
 repository.create_all()
 

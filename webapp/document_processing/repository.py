@@ -6,8 +6,10 @@ from .models import Document
 
 DocumentList = List[Document]
 
+
 class UnexpectedEntityException(Exception):
     ...
+
 
 class DocumentRepository(SqlAlchemyAdaptor):
     """
@@ -42,7 +44,9 @@ class DocumentRepository(SqlAlchemyAdaptor):
     def save_multiple(self, documents: List[Document]):
         for document in documents:
             if not isinstance(document, self.entity):
-                raise UnexpectedEntityException(f"Expected {self.entity}, found {type(document)}")
+                raise UnexpectedEntityException(
+                    f"Expected {self.entity}, found {type(document)}"
+                )
 
         self.session.add_all(documents)
         self.session.commit()

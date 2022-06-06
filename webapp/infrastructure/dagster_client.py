@@ -1,4 +1,5 @@
 from dagster_graphql import DagsterGraphQLClient, DagsterGraphQLClientError
+
 from document_processing import utils
 
 
@@ -7,14 +8,13 @@ def default_client() -> DagsterGraphQLClient:
     Returns a an instance of the configured DagsterGraphQLClient. Configuration is
     pulled from the GRAPHQL_HOST/GRAPHQL_PORT env vars, defaults to the dev environment
     defaults if the env vars are not set.
-    
+
     :return: A preconfigured graphql client.
     """
     return DagsterGraphQLClient(
         utils.env(str, "GRAPHQL_HOST", default="dagster-dagit"),
         utils.env(int, "GRAPHQL_PORT", default=3000),
     )
-
 
 
 class DagsterClient:

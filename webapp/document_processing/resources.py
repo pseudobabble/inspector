@@ -1,8 +1,8 @@
-from datetime import datetime
 import json
 import logging
 import os
 import time
+from datetime import datetime
 
 import flask
 from flask import request
@@ -13,9 +13,9 @@ from infrastructure.dagster_client import DagsterClient, default_client
 from infrastructure.repository import transaction
 
 from .builder import DocumentBuilder
+from .job_execution import semantic_search
 from .repository import DocumentRepository
 from .schemata import Document, DocumentToPipeline, PipelineToMLDocument, RawDocument
-from .job_execution import semantic_search
 
 _logger = logging.getLogger(__package__)
 
@@ -120,7 +120,9 @@ class Upload(Resource):
     def post(self):
         uploaded_files = flask.request.files.getlist("file")
         if not uploaded_files:
-            return {"error": "No file was provided, files must have the key 'file'"}, 422
+            return {
+                "error": "No file was provided, files must have the key 'file'"
+            }, 422
         file_data = [
             {"filename": f.filename, "content": f.read()} for f in uploaded_files
         ]
@@ -137,29 +139,34 @@ class Upload(Resource):
 
 
 class AnswerHook(Resource):
+    """
+    Query result ingestion via webhook
+    """
+
     routes = ["/hooks/semantic-search"]
 
     @transaction
     def post(self):
         body = request.get_json()
-        with open("/tmp/answers.json", "w") as file:
+        with open("/tmp/answers.json", "w+") as file:
             json.dump(body, file)
-        return '', 201
+        return "", 201
 
 
 class UserQuery(Resource):
     """
     NOTES:
-    
+
     This could become a generic way for query runs to be triggered, depending on the
-    endpoint schema. 
+    endpoint schema.
 
     I think it would be better to use our own abstraction over
     the terminology that dagster uses, e.g. UserQuery or something. If there are
-    other types of run that the user configures, they should probably use a 
+    other types of run that the user configures, they should probably use a
     different endpoint.
 
     """
+
     routes = ["/queries", "/queries/<int:query_id>"]
 
     def post(self):
@@ -167,20 +174,31 @@ class UserQuery(Resource):
         Triggers a semantic_search, in keeping with REST, it returns the id of the created query.
         """
         client = default_client()
+        body = request.get_json()
+
+        # the example values
+        args = {
+            "topic outside",
+            "lots of processes interface with resources outside of their silicon prison",
+        }
+        user_params = body.get("params")
+        if user_params:
+            args = user_params
+            _logger.info(f"Initiating query with user supplied arguments: {args}")
+
         client.submit_job_execution(
-            "answer_query", run_config=semantic_search.run_config()
+            "answer_query", run_config=semantic_search.run_config(*args)
         )
         return {"query_id": 1}, 201
-
 
     def get(self, query_id=None):
         """
         Returns the answers to the user query with the id specified.
         :return: The content of the answers.
         """
-        
+        start = datetime.now()
         if query_id is None:
-            return '', 404
+            return "", 404
 
         _logger.info(
             f"Received long polling request for results of query with id {query_id}"
@@ -188,7 +206,8 @@ class UserQuery(Resource):
 
         while not os.path.exists("/tmp/answers.json"):
             time.sleep(0.5)
-
+            if (datetime.now() - start).seconds > 20:
+                return "", 404
 
         with open("/tmp/answers.json", "r") as data:
             content = data.read()
@@ -196,6 +215,6 @@ class UserQuery(Resource):
         os.unlink("/tmp/answers.json")
 
         return {
-            "content": content,
+            "content": json.loads(content),
             "date": datetime.now().strftime("%Y/%m/%d %H:%M:%S"),
         }

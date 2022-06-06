@@ -1,4 +1,4 @@
-def run_config() -> dict:
+def run_config(retrieve_query, semantic_refine_query) -> dict:
     """
     Returns essentially a fixture job config
     """
@@ -6,13 +6,13 @@ def run_config() -> dict:
         "ops": {
             "retrieve_candidates": {
                 "config": {
-                    "query": "topic outside ",
+                    "query": retrieve_query,
                     "top_k": 30,
                 },
             },
             "semantic_refine_candidates": {
                 "config": {
-                    "query": "lots of processes interface with resources outside of their silicon prison",
+                    "query": semantic_refine_query,
                     "top_k": 2,
                 }
             },

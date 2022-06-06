@@ -4,11 +4,12 @@ from pathlib import Path
 from typing import List
 
 import torch
-from adaptors.rest.webhook import Answer
 from dagster import Array, op
 from dagster_shell import create_shell_command_op
 from haystack.schema import Document
 from sentence_transformers import SentenceTransformer, util
+
+from adaptors.rest.webhook import Answer
 
 # op which just runs a shell command
 convert_input_doc_files = create_shell_command_op(

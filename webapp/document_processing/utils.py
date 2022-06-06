@@ -1,6 +1,5 @@
 import os
 
-
 env = lambda init, key, default=None: init(os.getenv(key, default))
 env.__doc__ = """
 A convenience function for expressing typed env config consistently
