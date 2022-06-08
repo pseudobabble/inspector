@@ -3,11 +3,13 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from adaptors.document_formats.parsers import (ParsedFile,
-                                               ParsedFileCollection,
-                                               ParserCoordinator,
-                                               WordProcessorTextParser,
-                                               WordProcessorXmlParser)
+from adaptors.document_formats.parsers import (
+    ParsedFile,
+    ParsedFileCollection,
+    ParserCoordinator,
+    WordProcessorTextParser,
+    WordProcessorXmlParser,
+)
 
 
 class TestFileParsers(unittest.TestCase):

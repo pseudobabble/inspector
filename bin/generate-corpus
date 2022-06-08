@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+
+source ./generate_corpus/venv/bin/activate
+export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+python ./generate_corpus/generate_corpus.py $1 $2 $3
+deactivate
+unset DOTNET_SYSTEM_GLOBALIZATION_INVARIANT

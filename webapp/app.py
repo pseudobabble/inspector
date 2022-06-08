@@ -1,16 +1,41 @@
-import os
+from logging import config
 
 from flask import Flask
 from flask_restful import Api
 
-from document_processing.resources import Documents, Upload
+from document_processing import utils
+from document_processing.resources import AnswerHook, Documents, Upload, UserQuery
 from infrastructure import repository
+
+# TODO: Move this and any other configuration to its own package.
+config.dictConfig(
+    {
+        "version": 1,
+        "root": {"handlers": ["console"], "level": "DEBUG"},
+        "handlers": {
+            "console": {
+                "formatter": "std_out",
+                "class": "logging.StreamHandler",
+                "level": "DEBUG",
+            }
+        },
+        "formatters": {
+            "std_out": {
+                "format": "%(asctime)s : %(levelname)s : %(module)s : %(funcName)s : %(message)s",
+                "datefmt": "%d-%m-%Y %I:%M:%S",
+            }
+        },
+    }
+)
+
 
 repository.create_all()
 
 app = Flask(__name__)
 api = Api(app)
 
+
+# Routing
 api.add_resource(Documents, *Documents.routes)
 api.add_resource(
     Documents, "/documents/get_by_ids", endpoint="get_by_ids", methods=["GET"]
@@ -22,23 +47,14 @@ api.add_resource(
     methods=["PATCH"],
 )
 api.add_resource(Upload, *Upload.routes)
-# api.add_resource(Trigger, *Trigger.routes)
+api.add_resource(AnswerHook, *AnswerHook.routes, methods=["POST"])
+api.add_resource(UserQuery, *UserQuery.routes, methods=["POST", "GET"])
 
 
-_env = lambda init, key, default=None: init(os.getenv(key, default))
-_env.__doc__ = """
-A convenience function for expressing typed env config consistently
-
-:param init: Callable, The constructor (usually type) of the env var.
-:param key: str, The name of the env var
-:param default: The value to return if the env var is not set.
-:return: The environment variable initialised to the desired type.
-"""
-
-
+# Run the flask app
 if __name__ == "__main__":
     app.run(
-        host=_env(str, "FLASK_HOST", default="webapp"),
-        port=_env(int, "FLASK_PORT", default="8080"),
-        debug=_env(bool, "FLASK_DEBUG", default=False),
+        host=utils.env(str, "FLASK_HOST", default="webapp"),
+        port=utils.env(int, "FLASK_PORT", default="8080"),
+        debug=utils.env(bool, "FLASK_DEBUG", default=False),
     )

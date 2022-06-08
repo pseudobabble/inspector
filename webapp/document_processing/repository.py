@@ -1,13 +1,14 @@
-from datetime import datetime
 from typing import List
-
-from sqlalchemy import func
 
 from infrastructure.repository.sqlalchemy_adaptor import SqlAlchemyAdaptor
 
 from .models import Document
 
 DocumentList = List[Document]
+
+
+class UnexpectedEntityException(Exception):
+    ...
 
 
 class DocumentRepository(SqlAlchemyAdaptor):
@@ -44,9 +45,7 @@ class DocumentRepository(SqlAlchemyAdaptor):
         for document in documents:
             if not isinstance(document, self.entity):
                 raise UnexpectedEntityException(
-                    "{} is not a {}".format(
-                        entity.__class__.__name__, self.entity.__name__
-                    )
+                    f"Expected {self.entity}, found {type(document)}"
                 )
 
         self.session.add_all(documents)

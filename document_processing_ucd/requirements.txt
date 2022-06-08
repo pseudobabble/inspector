@@ -7,3 +7,5 @@ farm-haystack
 marshmallow 
 textract 
 minio
+resourceez
+azure-core==1.24.1
