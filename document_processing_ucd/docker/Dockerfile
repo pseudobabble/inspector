@@ -11,8 +11,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
     libreoffice \
     libreoffice-writer \
     python3.8 \
-    python3-pip
-
+    python3-pip \
+    libcairo2 \
+    libcairo2-dev
 
 
 WORKDIR /opt/dagster/app
