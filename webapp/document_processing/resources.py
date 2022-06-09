@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from datetime import datetime
+from uuid import uuid4, UUID
 
 import flask
 from flask import request
@@ -12,9 +13,10 @@ from marshmallow import Schema
 from infrastructure.dagster_client import DagsterClient, default_client
 from infrastructure.repository import transaction
 
+from .models import Query
 from .builder import DocumentBuilder
 from .job_execution import semantic_search
-from .repository import DocumentRepository
+from .repository import DocumentRepository, QueryRepository
 from .schemata import Document, DocumentToPipeline, PipelineToMLDocument, RawDocument
 
 _logger = logging.getLogger(__package__)
@@ -148,9 +150,9 @@ class AnswerHook(Resource):
     @transaction
     def post(self):
         body = request.get_json()
-        with open("/tmp/answers.json", "w+") as file:
-            json.dump(body, file)
-        return "", 201
+        run_id = body.get('run_id')
+        query = QueryRepository().get_by_run_id(run_id)
+        return query.answers, 201
 
 
 class UserQuery(Resource):
@@ -186,10 +188,14 @@ class UserQuery(Resource):
             args = user_params
             _logger.info(f"Initiating query with user supplied arguments: {args}")
 
-        client.submit_job_execution(
+        run_id = client.submit_job_execution(
             "answer_query", run_config=semantic_search.run_config(*args)
         )
-        return {"query_id": 1}, 201
+
+        query = Query(run_id=UUID(run_id), answers={})
+        QueryRepository().save(query)
+
+        return {"query_id": str(query.id)}, 201
 
     def get(self, query_id=None):
         """
@@ -204,17 +210,14 @@ class UserQuery(Resource):
             f"Received long polling request for results of query with id {query_id}"
         )
 
-        while not os.path.exists("/tmp/answers.json"):
-            time.sleep(0.5)
+        query = None
+        while not query:
+            query = QueryRepository().get_by_id(str(query_id))
+            time.sleep(5)
             if (datetime.now() - start).seconds > 20:
                 return "", 404
 
-        with open("/tmp/answers.json", "r") as data:
-            content = data.read()
-
-        os.unlink("/tmp/answers.json")
-
         return {
-            "content": json.loads(content),
+            "content": json.loads(query.answers),
             "date": datetime.now().strftime("%Y/%m/%d %H:%M:%S"),
         }

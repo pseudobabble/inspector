@@ -1,6 +1,9 @@
+from uuid import uuid4
+
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import LargeBinary
+from sqlalchemy_utils import UUIDType, JSONType
 
 from infrastructure import repository
 
@@ -25,4 +28,10 @@ class MLDocument(repository.Base):
     # run id
 
 
-# TODO: class Run
+class Query(repository.Base):
+
+    __tablename__ = "queries"
+
+    id = Column(UUIDType, primary_key=True, default=uuid4())
+    run_id = Column(UUIDType(binary=False))
+    answers = Column(JSONType)

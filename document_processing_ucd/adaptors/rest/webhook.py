@@ -10,6 +10,7 @@ class Answer(ApiObject):
     index: int
     score: float
     snippet: str
+    run_id: str
 
 
 class AnswerClient:

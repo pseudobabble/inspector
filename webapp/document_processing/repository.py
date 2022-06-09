@@ -1,8 +1,9 @@
 from typing import List
+from uuid import uuid4
 
 from infrastructure.repository.sqlalchemy_adaptor import SqlAlchemyAdaptor
 
-from .models import Document
+from .models import Document, Query
 
 DocumentList = List[Document]
 
@@ -10,6 +11,16 @@ DocumentList = List[Document]
 class UnexpectedEntityException(Exception):
     ...
 
+class QueryRepository(SqlAlchemyAdaptor):
+
+    entity = Query
+
+    def get_by_run_id(self, run_id: uuid4):
+        return (
+            self.session.query(self.entity)
+            .filter(self.entity.run_id == run_id)
+            .first()
+        )
 
 class DocumentRepository(SqlAlchemyAdaptor):
     """

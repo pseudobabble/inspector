@@ -252,6 +252,8 @@ def semantic_refine_candidates(context, candidate_documents: List[Document]):
         result_log += "=" * 20 + "\n"
 
         answers += [Answer(index=repr(idx), score=repr(score), snippet=repr(snippet))]
+
+    answers = {"answers": answers, 'run_id': context.pipeline_run.run_id}
     logger.info("Refined query results: %s", result_log)
 
     client = context.resources.answer_client
