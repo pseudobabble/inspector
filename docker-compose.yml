@@ -169,6 +169,12 @@ services:
       - dagster-postgres
       - dagster-ucd
 
+  jupyterlab:
+    image: jupyter/scipy-notebook:latest
+    container_name:   jupyter_notebook
+    command: "start-notebook.sh"
+    ports:
+      - 8888:8888
 
   webapp:
     build:
