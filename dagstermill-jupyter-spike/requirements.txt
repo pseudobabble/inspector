@@ -1,0 +1,7 @@
+dagster==0.14.0
+dagster-postgres==0.14.0
+dagster-docker==0.14.0
+dagstermill
+requests
+protobuf<=3.19
+MarkupSafe==2.0.1
