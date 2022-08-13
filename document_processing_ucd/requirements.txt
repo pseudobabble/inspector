@@ -1,7 +1,7 @@
-dagster 
-dagster-postgres 
-dagster-docker 
-dagster-shell 
+dagster==0.14.0
+dagster-postgres==0.14.0
+dagster-docker==0.14.0
+dagster-shell==0.14.0
 requests 
 farm-haystack 
 marshmallow 

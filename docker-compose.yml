@@ -121,6 +121,33 @@ services:
     networks:
       - internal
 
+  spike:
+    build:
+      context: ./dagstermill-jupyter-spike
+      dockerfile: docker/Dockerfile
+    container_name: spike
+    image: spike
+    restart: always
+    environment:
+      DAGSTER_POSTGRES_USER: "postgres_user"
+      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+      DAGSTER_POSTGRES_DB: "postgres_db"
+      DAGSTER_CURRENT_IMAGE: "spike"
+    expose:
+      - "4001"
+    networks:
+      - internal
+
+  jupyter:
+      image: jupyter/datascience-notebook
+      ports:
+        - 8888:8888
+      container_name: jupyter_notebook
+#      command: "start-notebook.sh \
+#        --NotebookApp.password=${JUPYTER_ACCESS_TOKEN}"
+#        --NotebookApp.certfile=/etc/ssl/notebook/jupyter.pem"
+
+
   # This service runs dagit, which loads your user code from the user code container.
   # Since our instance uses the QueuedRunCoordinator, any runs submitted from dagit will be put on
   # a queue and later dequeued and launched by dagster-daemon.
