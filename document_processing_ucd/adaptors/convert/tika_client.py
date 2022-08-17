@@ -19,8 +19,8 @@ class TikaClient:
             'png': 'image/png',
             'jpg': 'image/jpg',
             'odt': 'application/vnd.oasis.opendocument.text',
-            'word-2003': 'application/msword',
-            'word-2007+': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         }
         self.return_types = {
             'text': 'text/plain',

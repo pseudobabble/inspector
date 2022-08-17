@@ -11,6 +11,27 @@ from sentence_transformers import SentenceTransformer, util
 
 from adaptors.rest.webhook import Answer
 
+
+@op
+def convert_with_tika(context, raw_document: dict):
+    logger = context.log
+
+    tika_client = context.resources.tika_client
+
+    logger.info('Converting doc %s to text with tika', raw_document['filename'])
+
+    document_extension = Path(raw_document['filename']).suffix
+    if not document_extension in tika_client.allowed_types:
+        raise ValueError(
+            'Document type %s not allowed. Allowed types are %s',
+            document_extension,
+            ', '.join(list(tika_client.allowed_types))
+        )
+    document_text = tika_client.convert_text(raw_document['content'], document_extension)
+
+    return document_text
+
+
 # op which just runs a shell command
 convert_input_doc_files = create_shell_command_op(
     (
