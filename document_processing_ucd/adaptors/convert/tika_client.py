@@ -26,6 +26,7 @@ class TikaClient:
             'text': 'text/plain',
             'json': 'application/json'
         }
+        self.allowed_types = list(self.content_types.keys())
 
     def _convert(self, byte_buffer: bytes, content_type: str, accept: str):
         response = self.http_client.put(
