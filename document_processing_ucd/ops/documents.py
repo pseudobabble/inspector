@@ -4,21 +4,62 @@ from pathlib import Path
 from typing import List
 
 import torch
-from dagster import Array, op
+from dagster import Array, op, DynamicOut, DynamicOutput
 from dagster_shell import create_shell_command_op
 from haystack.schema import Document
 from sentence_transformers import SentenceTransformer, util
 
 from adaptors.rest.webhook import Answer
 
+@op(
+    config_schema={"keys": Array(str)},
+    out=DynamicOut(str)
+)
+def get_file_keys(context):
+    config = context.op_config
+    keys = config['keys']
 
-@op
-def convert_with_tika(context, raw_document: dict):
+    for key in keys:
+        yield DynamicOutput(
+            value=key,
+            mapping_key=key
+        )
+
+@op(
+    required_resource_keys={"blob_client"},
+)
+def get_file_from_document_store(context, file_key: str):
+    logger = context.log
+
+    blob_client = context.blob_client
+
+    logger.info('Getting %s from document store', f"{file_key}/original")
+    file_content = blob_client.get(file_key)
+
+    return file_content
+
+@op(
+    required_resource_keys={"blob_client"},
+)
+def put_file_to_document_store(context, file_key, file_content):
+    logger = context.log
+
+    blob_client = context.blob_client
+
+    logger.info('Putting %s to document store', file_key)
+    response = blob_client.put(f"{file_key}/text", file_put_file_to_document_content)
+
+    return response
+
+@op(
+    required_resource_keys={"tika_client"},
+)
+def convert_with_tika(context, file_content: bytes):
     logger = context.log
 
     tika_client = context.resources.tika_client
 
-    logger.info('Converting doc %s to text with tika', raw_document['filename'])
+    logger.info('Converting file to text with tika')
 
     document_extension = Path(raw_document['filename']).suffix
     if not document_extension in tika_client.allowed_types:
@@ -27,100 +68,11 @@ def convert_with_tika(context, raw_document: dict):
             document_extension,
             ', '.join(list(tika_client.allowed_types))
         )
-    document_text = tika_client.convert_text(raw_document['content'], document_extension)
+    document_text = tika_client.convert_text(file_content, document_extension)
 
     return document_text
 
 
-# op which just runs a shell command
-convert_input_doc_files = create_shell_command_op(
-    (
-        "/usr/bin/soffice "
-        "--headless "
-        "--convert-to txt:Text "
-        "--outdir ./tmp/txt/ ./tmp/docs_in/*.doc ./tmp/docs_in/*.docx"
-    ),
-    name="convert_input_doc_files",
-)
-
-
-@op
-def docs_to_text(context, raw_documents: List[dict]):
-    logger = context.log
-
-    paths = os.listdir("./tmp/docs_in")
-    logger.info("Converting docs to text: %s", paths)
-
-    os.system(
-        "/usr/bin/soffice "
-        '"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_root" '
-        "--headless "
-        "--convert-to txt:Text "
-        "--outdir ./tmp/txt/ ./tmp/docs_in/*.doc ./tmp/docs_in/*.docx"
-    )
-    logger.info("Converted files: %s", os.listdir("./tmp/txt"))
-
-    return raw_documents
-
-
-@op(required_resource_keys={"blob_client"})
-def write_input_files(context, raw_documents: List[dict]):
-    logger = context.log
-    logger.info("Received %s raw_documents", len(raw_documents))
-
-    blob_client = context.resources.blob_client
-
-    logger.info("Putting %s original files to blob store", len(raw_documents))
-    logger.info("Writing %s files to filesystem for conversion", len(raw_documents))
-    for d in raw_documents:
-        # store original content
-        filename_path = Path(d["filename"])
-        file_extension = filename_path.suffix
-        filename_stem = filename_path.stem
-        key = f"{filename_stem}/original{file_extension}"
-        blob_client.put(key, d["content"])
-
-        # write to filesystem for conversion
-        os.makedirs("./tmp/docs_in", exist_ok=True)
-        os.makedirs("./tmp/txt", exist_ok=True)
-        with open(f"./tmp/docs_in/{d['filename']}", "wb") as f:
-            f.write(d["content"])
-
-    return raw_documents
-
-
-@op(required_resource_keys={"blob_client"})
-def store_converted_files(context, raw_documents: List[dict]):
-    logger = context.log
-
-    blob_client = context.resources.blob_client
-
-    paths = [
-        os.path.join("/opt/dagster/app/tmp/txt/", item)
-        for item in os.listdir("./tmp/txt")
-    ]
-
-    logger.info("Reading txt paths: %s", paths)
-    raw_text_documents = []
-    for p in paths:
-        with open(p, "rb") as f:
-            raw_text_doc = {"filename": Path(f.name).name, "content": f.read()}
-            raw_text_documents.append(raw_text_doc)
-
-    for td in raw_text_documents:
-        for rd in raw_documents:
-            if Path(rd["filename"]).stem == Path(td["filename"]).stem:
-                td["meta"] = rd["meta"]
-
-    logger.info("Putting %s raw_text_documents to blob store", len(raw_text_documents))
-    for d in raw_text_documents:
-        filename_path = Path(d["filename"])
-        file_extension = filename_path.suffix
-        filename_stem = filename_path.stem
-        key = f"{filename_stem}/text{file_extension}"
-        blob_client.put(key, d["content"])
-
-    return raw_text_documents
 
 
 @op(

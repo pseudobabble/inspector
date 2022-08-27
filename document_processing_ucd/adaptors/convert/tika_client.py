@@ -7,6 +7,7 @@ import requests
 class TikaConnectionParams:
     host: str = 'localhost'
     port: str = '9998'
+    endpoint: str = 'tika'
 
 
 class TikaClient:
@@ -30,7 +31,7 @@ class TikaClient:
 
     def _convert(self, byte_buffer: bytes, content_type: str, accept: str):
         response = self.http_client.put(
-            f'http://{self.connection_params.host}:{self.connection_params.port}/tika',
+            f'http://{self.connection_params.host}:{self.connection_params.port}/{self.connection_params.endpoint}',
             data=byte_buffer,
             headers={
                 'Content-Type': self.content_types[content_type],
