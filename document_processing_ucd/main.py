@@ -23,7 +23,12 @@ from resources.convert import tika_client
 nltk.download("punkt")
 
 
-
+convert_files_to_text_j = convert_files_to_text.to_job(
+    resource_defs={
+        "tika_client": tika_client,
+        "blob_client": blob_client
+    }
+)
 
 
 @job(
@@ -44,4 +49,5 @@ def answer_query():
 def document_processing():
     return [
         answer_query,
+        convert_files_to_text_j
     ]

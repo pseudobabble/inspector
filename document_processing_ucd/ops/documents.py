@@ -2,6 +2,7 @@ import os
 from hashlib import md5
 from pathlib import Path
 from typing import List
+import io
 
 import torch
 from dagster import Array, op, DynamicOut, DynamicOutput
@@ -10,6 +11,7 @@ from haystack.schema import Document
 from sentence_transformers import SentenceTransformer, util
 
 from adaptors.rest.webhook import Answer
+
 
 @op(
     config_schema={"keys": Array(str)},
@@ -22,7 +24,7 @@ def get_file_keys(context):
     for key in keys:
         yield DynamicOutput(
             value=key,
-            mapping_key=key
+            mapping_key=str(md5(key.encode('utf-8')).hexdigest())
         )
 
 @op(
@@ -31,9 +33,9 @@ def get_file_keys(context):
 def get_file_from_document_store(context, file_key: str):
     logger = context.log
 
-    blob_client = context.blob_client
+    blob_client = context.resources.blob_client
 
-    logger.info('Getting %s from document store', f"{file_key}/original")
+    logger.info('Getting %s from document store', f"{file_key}")
     file_content = blob_client.get(file_key)
 
     return file_content
@@ -44,35 +46,39 @@ def get_file_from_document_store(context, file_key: str):
 def put_file_to_document_store(context, file_key, file_content):
     logger = context.log
 
-    blob_client = context.blob_client
+    blob_client = context.resources.blob_client
 
     logger.info('Putting %s to document store', file_key)
-    response = blob_client.put(f"{file_key}/text", file_put_file_to_document_content)
+    response = blob_client.put(f"{file_key}", file_content)
 
     return response
 
 @op(
     required_resource_keys={"tika_client"},
 )
-def convert_with_tika(context, file_content: bytes):
+def convert_with_tika(context, file_content: io.BytesIO, file_type: str):
     logger = context.log
 
     tika_client = context.resources.tika_client
 
     logger.info('Converting file to text with tika')
 
-    document_extension = Path(raw_document['filename']).suffix
-    if not document_extension in tika_client.allowed_types:
+    if not file_type in tika_client.allowed_types:
+        allowed_types = ', '.join(list(tika_client.allowed_types))
         raise ValueError(
-            'Document type %s not allowed. Allowed types are %s',
-            document_extension,
-            ', '.join(list(tika_client.allowed_types))
+            f'Document type {file_type} not allowed. Allowed types are {allowed_types}'
         )
-    document_text = tika_client.convert_text(file_content, document_extension)
-
-    return document_text
+    document_text = tika_client.convert_text(file_content.read(), file_type)
 
 
+    return document_text.encode('utf-8')
+@op
+def get_target_file_key(context, original_file_key: str, target_file_type: str):
+    return str(Path(original_file_key).with_suffix(f".{target_file_type}"))
+
+@op
+def get_original_file_extension(context, original_file_key: str):
+    return str(Path(original_file_key).suffix).strip('.')
 
 
 @op(

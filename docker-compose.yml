@@ -244,6 +244,8 @@ services:
       # Choose the configuration you want, or add your own custom one
       # - | ./sample-configs/customocr/tika-config-inline.xml:/tika-config.xml
       -  ./tika/config.xml:/tika-config.xml
+    networks:
+      - internal
 
 networks:
   internal:
