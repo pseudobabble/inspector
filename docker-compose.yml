@@ -228,6 +228,25 @@ services:
     volumes:
       - ./nginx/ui/demo:/usr/share/nginx/html/demo
 
+  tika:
+    image: apache/tika:${TIKA_TAG}-full
+    container_name: tika
+    # Override default so we can add configuration on classpath
+    entrypoint: [ "/bin/sh", "-c", "exec java -cp /customocr:/${TIKA_JAR}-${TIKA_TAG}.jar org.apache.tika.server.TikaServerCli -h 0.0.0.0 $$0 $$@"]
+    # Kept command as example but could be added to entrypoint too
+    command: -c /tika-config.xml
+    environment:
+      TIKA_CONFIG: "tika-config.xml"
+    restart: on-failure
+    ports:
+      - "9998:9998"
+    volumes:
+      # Choose the configuration you want, or add your own custom one
+      # - | ./sample-configs/customocr/tika-config-inline.xml:/tika-config.xml
+      -  ./tika/config.xml:/tika-config.xml
+    networks:
+      - internal
+
 networks:
   internal:
 
