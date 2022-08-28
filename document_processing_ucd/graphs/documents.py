@@ -2,7 +2,7 @@ from dagster import graph, op
 
 from ops.documents import (
     get_file_keys,
-    get_target_file_key,
+    get_text_file_key,
     get_original_file_extension,
     get_file_from_document_store,
     put_file_to_document_store,
@@ -11,7 +11,7 @@ from ops.documents import (
 
 @graph
 def convert_file_to_text(file_key: str):
-    target_key = get_target_file_key(file_key)
+    target_key = get_text_file_key(file_key)
     original_file_extension = get_original_file_extension(file_key)
 
     file_content = get_file_from_document_store(file_key)

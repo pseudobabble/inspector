@@ -73,7 +73,7 @@ def convert_with_tika(context, file_content: io.BytesIO, file_type: str):
 
     return document_text.encode('utf-8')
 @op
-def get_target_file_key(context, original_file_key: str):
+def get_text_file_key(context, original_file_key: str):
     return str(Path(original_file_key).with_suffix(".txt"))
 
 @op
