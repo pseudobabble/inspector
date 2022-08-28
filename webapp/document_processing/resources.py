@@ -153,13 +153,12 @@ class Upload(Resource):
             }, 422
         upload_files = [UploadFile(f.filename, f.read()) for f in uploaded_files]
 
-        for f in uploaded_files:
+        for f in upload_files:
             document = self.document_builder.build(
                 {"filename": f.filename, "content": f.content}
             )
             document_ids.append(document.id)
             self.blob_client.put(f.storage_key, f.content)
-
 
 
         return {"success": 200}
