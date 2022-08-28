@@ -10,8 +10,8 @@ from ops.documents import (
 )
 
 @graph
-def convert_file_to_text(file_key: str, target_type: str):
-    target_key = get_target_file_key(file_key, target_type)
+def convert_file_to_text(file_key: str):
+    target_key = get_target_file_key(file_key)
     original_file_extension = get_original_file_extension(file_key)
 
     file_content = get_file_from_document_store(file_key)
