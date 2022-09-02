@@ -247,6 +247,13 @@ services:
     networks:
       - internal
 
+  jupyterlab:
+    image: jupyter/scipy-notebook:latest
+    container_name: jupyterlab
+    command: "start-notebook.sh"
+    ports:
+      - 8888:8888
+
 networks:
   internal:
 
