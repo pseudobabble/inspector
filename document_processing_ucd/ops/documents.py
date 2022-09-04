@@ -12,6 +12,78 @@ from sentence_transformers import SentenceTransformer, util
 
 from adaptors.rest.webhook import Answer
 
+# TODO: JobCoordinator, eg TrainingCoordinator
+# its a @resource, stateless (classmethods) object
+# which provides a standard interface for interacting with
+# services, eg data retrieval/persistence clients, http clients
+# Benefits: provides indirection which allows DI,
+# - data retrieval/persistence clients, http clients, data schema validation, etc
+# eg extract out transformers code to context.resources.coordinator.transformers
+# then you can just do context.resources.coordinator.transformers.automodel.from_pretrained(model_name)
+# and you can configure which automodel is used in dagster config
+
+@op(config_schema={"data_identifier": str}, required_resource_keys={"data_repository"})
+def get_data(context):
+    logger = context.log
+    data_repository = context.resources.data_repository
+
+    data_identifier = context.
+    data = data_repository.get(data_identifier)
+
+    return data
+
+
+@op
+def preprocess(context, data):
+    pass
+
+@op(
+    config_schema={
+        "autotokenizer_class": str,
+        "model_name": str,
+        "padding": bool,
+        "truncation": bool,
+        "tensor_type": str # tf/pt, TODO: enum choice
+    }
+)
+def tokenize(context, data):
+    automodel_class = context.op_config['automodel_class']
+    model_name = context.op_config['model_name']
+    padding = context.op_config['padding']
+    truncation = context.op_config['truncation']
+    tensor_type = context.op_config['tensor_type']
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    encoded_input = tokenizer(data, padding=padding, truncation=truncation, return_tensors=tensor_type)
+
+    return encoded_input
+
+# TODO: automodel choices from enum
+@op(config_schema={'automodel_class': str, "model": str})
+def train(context, train_dataset, eval_dataset):
+    automodel_class = context.op_config['automodel_class']
+    model = context.op_config['model']
+
+    automodel = AutoModel.from_pretrained("model")
+    training_arguments = TrainingArguments()
+    trainer = Trainer(
+        model=automodel,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset
+    )
+    trainer.train()
+
+    return automodel
+
+def save_model():
+    pass
+
+def load_model():
+    '''loading our own saved models, use the coordinator'''
+
+def predict():
+    pass
 
 @op(
     config_schema={"keys": Array(str)},
