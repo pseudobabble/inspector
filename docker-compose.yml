@@ -247,6 +247,24 @@ services:
     networks:
       - internal
 
+  training-ucd:
+    build:
+      context: ./training_ucd
+      dockerfile: docker/Dockerfile
+    container_name: training-ucd
+    image: training-ucd
+    restart: always
+    environment:
+      DAGSTER_POSTGRES_USER: "postgres_user"
+      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+      DAGSTER_POSTGRES_DB: "postgres_db"
+      DAGSTER_CURRENT_IMAGE: "training-ucd"
+    expose:
+      - "4001"
+    networks:
+      - internal
+
+
 networks:
   internal:
 

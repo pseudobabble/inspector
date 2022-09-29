@@ -27,7 +27,7 @@ def get_data(context):
     logger = context.log
     data_repository = context.resources.data_repository
 
-    data_identifier = context.
+    data_identifier = context.op_config['data_identifier']
     data = data_repository.get(data_identifier)
 
     return data
@@ -46,7 +46,7 @@ def preprocess(context, data):
         "tensor_type": str # tf/pt, TODO: enum choice
     }
 )
-def tokenize(context, data):
+def tokenize(context, dataset):
     automodel_class = context.op_config['automodel_class']
     model_name = context.op_config['model_name']
     padding = context.op_config['padding']
@@ -54,23 +54,22 @@ def tokenize(context, data):
     tensor_type = context.op_config['tensor_type']
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    encoded_input = tokenizer(data, padding=padding, truncation=truncation, return_tensors=tensor_type)
+    encoded_input = tokenizer(dataset, padding=padding, truncation=truncation, return_tensors=tensor_type)
 
     return encoded_input
 
 # TODO: automodel choices from enum
 @op(config_schema={'automodel_class': str, "model": str})
-def train(context, train_dataset, eval_dataset):
+def train(context, dataset):
     automodel_class = context.op_config['automodel_class']
-    model = context.op_config['model']
+    automodel = AutoModel.from_pretrained(automodel_class)
 
-    automodel = AutoModel.from_pretrained("model")
     training_arguments = TrainingArguments()
     trainer = Trainer(
         model=automodel,
         args=training_args,
-        train_dataset=train_dataset,
-        eval_dataset=eval_dataset
+        train_dataset=dataset["train"].shuffle(seed=42).select(range(1000)),
+        eval_dataset=dataset["eval"].shuffle(seed=42).select(range(1000))
     )
     trainer.train()
 

@@ -8,3 +8,7 @@ load_from:
       host: dagster-ucd-document-processing
       port: 4001
       location_name: "dagster-ucd-document-processing"
+  - grpc_server:
+      host: training-ucd
+      port: 4001
+      location_name: "training-ucd"
