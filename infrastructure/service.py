@@ -5,4 +5,4 @@ class Service(ABC):
     @abstractmethod
     @classmethod
     def configure(cls, config: dict) -> 'Service':
-        return cls(**)
+        return cls(**config)
