@@ -249,7 +249,7 @@ services:
 
   training-ucd:
     build:
-      context: ./training_ucd
+      context: ./training-ucd
       dockerfile: docker/Dockerfile
     container_name: training-ucd
     image: training-ucd

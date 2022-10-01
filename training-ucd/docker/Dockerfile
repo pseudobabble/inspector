@@ -20,6 +20,7 @@ WORKDIR /opt/dagster/app
 
 # Copy dependencies conf repository code
 COPY ./requirements.txt ./requirements.txt
+COPY ./infrastructure-0.1-py3-none-any.whl ./infrastructure-0.1-py3-none-any.whl
 
 # Install python dependencies
 RUN pip --no-input install -r requirements.txt

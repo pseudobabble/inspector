@@ -82,4 +82,4 @@ def save_model(context):
     model_identifier = config['trained_model_identifier']
     logger.info('Saving model: %s', model_identifier)
 
-    model.save(trained_model_identifier, save_function=model_repository.save)
+    model.save_pretrained(trained_model_identifier, save_function=model_repository.put)
