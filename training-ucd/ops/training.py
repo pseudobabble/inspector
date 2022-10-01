@@ -29,18 +29,26 @@ def get_pretrained_model(context):
 
 
 @op(
-    config_schema={'data_identifier': str},
+    config_schema={
+        'data_identifier': str,
+        'destination_format': str
+    },
     required_resource_keys={
         "data_adaptor"
+        "data_processor"
     }
 )
 def get_data(context):
-    logger = context.log
     config = context.op_config
+    logger = context.log
+    data_adaptor = context.resources.data_adaptor
+    data_processor = context.resources.data_processor
 
     data_identifier = config['data_identifier']
+    destination_format = config['destination_format']
     logger.info('Getting dataset: %s', data_identifier)
-    dataset = data_adaptor.get(data_identifier)
+    data = data_adaptor.get(data_identifier)
+    dataset = data_processor.process(data)
 
     return dataset
 
@@ -55,7 +63,7 @@ def train_pretrained_model(model, data):
 
     trainer = context.resources.trainer
     logger.info('Training')
-    trained_model = trainer.train_pretrained(model, data)
+    trained_model = trainer.train(model, data)
 
     return trained_model
 
@@ -72,5 +80,6 @@ def save_model(context):
     model_repository = context.resources.model_repository
 
     model_identifier = config['trained_model_identifier']
-    logger.info('Getting model: %s', model_identifier)
-    model_repository.put(model_identifier)
+    logger.info('Saving model: %s', model_identifier)
+
+    model.save(trained_model_identifier, save_function=model_repository.save)

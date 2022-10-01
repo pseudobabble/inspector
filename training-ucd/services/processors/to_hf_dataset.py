@@ -1,11 +1,15 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from .service import Service, ServiceConfig
+from pandas import DataFrame
+from datasets import Dataset
 
+from infrastructure.data_processor import (
+    DataProcessorConfig,
+    DataProcessor
+)
 
 @dataclass
-class DataProcessorConfig(ServiceConfig):
+class ToHFDatasetConfig(DataProcessorConfig):
     """
     This class is designed to hold DataProcessor __init__ configuration.
 
@@ -21,7 +25,7 @@ class DataProcessorConfig(ServiceConfig):
     """
 
 
-class DataProcessor(ABC, Service):
+class ToHFDataset(DataProcessor):
     """
     This class is designed to provide a common interface for all data processors.
 
@@ -29,6 +33,5 @@ class DataProcessor(ABC, Service):
     method.
     """
 
-    @abstractmethod
-    def process(self, *args, **kwargs):
-        raise NotImplementedError('You must implement `process` for {self._class_._name_}')
+    def process(self, dataframe: DataFrame, *args, **kwargs):
+        return Dataset.from_pandas(dataframe)
