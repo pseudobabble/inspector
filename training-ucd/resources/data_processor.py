@@ -1,6 +1,6 @@
 from dagster import resource
 
-from adaptors.processors.to_hf_dataset import ToHFDataset
+from services.processors.to_hf_dataset import ToHFDataset
 
 
 @resource

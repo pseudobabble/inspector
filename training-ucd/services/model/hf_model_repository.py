@@ -7,7 +7,7 @@ from transformers import (
     AutoModelForTokenClassification
 )
 
-from infrastructure.model_repository.model_repository import (
+from infrastructure.model_repository import (
     ModelRepositoryConfig,
     ModelRepository
 )

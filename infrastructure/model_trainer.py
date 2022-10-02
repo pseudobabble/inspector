@@ -21,7 +21,7 @@ class ModelTrainerConfig(ServiceConfig):
     """
 
 
-class ModelTrainer(ABC, Service):
+class ModelTrainer(Service):
     """
     This class is designed to provide a common interface for all data trainers.
 

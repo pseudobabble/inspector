@@ -5,6 +5,14 @@ import inspect
 
 @dataclass
 class ServiceConfig:
+    """
+    This class is designed to be a DTO for Service
+    configuration.
+
+    If the service is used as a @resource, this config
+    can be converted into a typed dict for the @resource
+    config schema.
+    """
 
     @classmethod
     def from_dict(cls, config: dict):
@@ -25,8 +33,16 @@ class ServiceConfig:
 
 
 class Service(ABC):
+    """
+    This class provides an interface for a configurable Service.
 
-    @abstractmethod
+    Instance configuration can be provided via @resource config,
+    defined by a ServiceConfig, and method parametrisation can be
+    achieved with @op config, which is then passed to the service
+    method called in the @op.
+    """
+
     @classmethod
+    @abstractmethod
     def configure(cls, config: ServiceConfig) -> 'Service':
         return cls(config)

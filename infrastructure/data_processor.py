@@ -21,7 +21,7 @@ class DataProcessorConfig(ServiceConfig):
     """
 
 
-class DataProcessor(ABC, Service):
+class DataProcessor(Service):
     """
     This class is designed to provide a common interface for all data processors.
 

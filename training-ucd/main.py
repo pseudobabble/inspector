@@ -5,7 +5,7 @@ from resources.model_repository import hf_model_repository, s3_model_repository
 from resources.data_adaptor import s3_data_adaptor
 from resources.data_processor import to_hf_dataset
 from resources.trainer import hf_trainer
-from graphs import train_pretrained as train_pretrained_graph
+from graphs.training import train_pretrained as train_pretrained_graph
 
 
 train_pretrained = train_pretrained_graph.to_job(
@@ -13,7 +13,8 @@ train_pretrained = train_pretrained_graph.to_job(
         'hf_model_repository': hf_model_repository,
         's3_model_repository': s3_model_repository,
         'data_adaptor': s3_data_adaptor,
-        'trainer': hf_trainer
+        'trainer': hf_trainer,
+        'data_processor': to_hf_dataset
     }
 )
 
@@ -21,5 +22,5 @@ train_pretrained = train_pretrained_graph.to_job(
 @repository
 def training():
     return [
-        trained_pretrained
+        train_pretrained
     ]

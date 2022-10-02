@@ -1,5 +1,7 @@
-from adaptors.data_adaptor.s3_adaptor import (
-    S3Adaptor
+from dagster import resource
+
+from services.data_adaptors.s3_adaptor import (
+    S3Adaptor,
     S3AdaptorConfig
 )
 

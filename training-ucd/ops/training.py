@@ -3,7 +3,7 @@ from dagster import op
 
 @op(
     config_schema={
-        'model_identifier': str
+        'model_identifier': str,
         'model_class_name': str
     },
     required_resource_keys={
@@ -34,7 +34,7 @@ def get_pretrained_model(context):
         'destination_format': str
     },
     required_resource_keys={
-        "data_adaptor"
+        "data_adaptor",
         "data_processor"
     }
 )
@@ -68,12 +68,12 @@ def train_pretrained_model(model, data):
     return trained_model
 
 @op(
-    config_schema={'trained_model_identifier': str}
+    config_schema={'trained_model_identifier': str},
     required_resource_keys={
         "s3_model_repository"
     }
 )
-def save_model(context):
+def save_model(context, model):
     logger = context.log
     config = context.op_config
 

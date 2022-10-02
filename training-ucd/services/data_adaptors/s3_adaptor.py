@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from infrastructure.model_repository import (
+from infrastructure.data_adaptor import (
     DataAdaptorConfig,
     DataAdaptor
 )
@@ -22,7 +22,7 @@ class S3Adaptor(DataAdaptor):
     secret_key: str
     bucket_name: str
 
-    def __init__(config: S3ModelRepositoryConfig):
+    def __init__(config: S3AdaptorConfig):
         self.vendor_client = Minio(
             endpoint=f"{config.host}:{config.port}",
             access_key=config.access_key,

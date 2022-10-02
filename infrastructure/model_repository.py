@@ -21,7 +21,7 @@ class ModelRepositoryConfig(ServiceConfig):
     """
 
 
-class ModelRepository(ABC, Service):
+class ModelRepository(Service):
     """
     This class is designed to provide a common interface for all model persisters.
 

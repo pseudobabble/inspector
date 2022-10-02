@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
-from .service import Service
+from .service import Service, ServiceConfig
 
-class DataAdapterConfig(dict):
+class DataAdaptorConfig(ServiceConfig):
     """
     This class is designed to hold DataAdapter __init__ configuration.
 
@@ -18,7 +18,7 @@ class DataAdapterConfig(dict):
     """
 
 
-class DataAdapter(ABC, Service):
+class DataAdaptor(Service):
     """
     This class is designed to provide a common interface for all model persisters.
 

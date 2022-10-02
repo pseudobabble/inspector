@@ -10,7 +10,7 @@ from minio import Minio
 
 
 @dataclass
-class MinioModelRepositoryConfig(ModelRepositoryConfig):
+class S3ModelRepositoryConfig(ModelRepositoryConfig):
     host: str
     port: str
     access_key: str
@@ -18,7 +18,7 @@ class MinioModelRepositoryConfig(ModelRepositoryConfig):
     bucket_name: str
 
 
-class MinioModelRepository(ModelRepositoryConfig):
+class S3ModelRepository(ModelRepositoryConfig):
 
     host: str = None
     port: str = None
@@ -26,7 +26,7 @@ class MinioModelRepository(ModelRepositoryConfig):
     secret_key: str
     bucket_name: str
 
-    def __init__(config: MinioModelRepositoryConfig):
+    def __init__(config: S3ModelRepositoryConfig):
         self.vendor_client = Minio(
             endpoint=f"{config.host}:{config.port}",
             access_key=config.access_key,

@@ -1,17 +1,17 @@
 from dagster import resource
 
-from adaptors.model.hugging_face_model_repository import (
+from services.model.hf_model_repository import (
     HFModelRepository,
     HFModelRepositoryConfig
 )
-from adaptors.model.minio_model_repository import (
-    S3ModelRepository
+from services.model.s3_model_repository import (
+    S3ModelRepository,
     S3ModelRepositoryConfig
 )
 
 
 @resource(config_schema=HFModelRepositoryConfig.get_resource_config())
-def hugging_face_model_repository(init_context):
+def hf_model_repository(init_context):
     hf_config = HFModelRepositoryConfig.from_dict(init_context)
     return HFModelRepository.configure(hf_config)
 

@@ -86,22 +86,22 @@ services:
   #
   # This 'template' is how you keep your code's execution environment consistent
   # repo paired with env
-  dagster-ucd:
-    build:
-      context: ./dagster-docker
-      dockerfile: Dockerfile_user_code
-    container_name: dagster-ucd
-    image: dagster-ucd_image
-    restart: always
-    environment:
-      DAGSTER_POSTGRES_USER: "postgres_user"
-      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
-      DAGSTER_POSTGRES_DB: "postgres_db"
-      DAGSTER_CURRENT_IMAGE: "dagster-ucd_image"
-    expose:
-      - "4000"
-    networks:
-      - internal
+  # dagster-ucd:
+  #   build:
+  #     context: ./dagster-docker
+  #     dockerfile: Dockerfile_user_code
+  #   container_name: dagster-ucd
+  #   image: dagster-ucd_image
+  #   restart: always
+  #   environment:
+  #     DAGSTER_POSTGRES_USER: "postgres_user"
+  #     DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+  #     DAGSTER_POSTGRES_DB: "postgres_db"
+  #     DAGSTER_CURRENT_IMAGE: "dagster-ucd_image"
+  #   expose:
+  #     - "4000"
+  #   networks:
+  #     - internal
 
 
   dagster-ucd-document-processing:
@@ -116,6 +116,7 @@ services:
       DAGSTER_POSTGRES_PASSWORD: "postgres_password"
       DAGSTER_POSTGRES_DB: "postgres_db"
       DAGSTER_CURRENT_IMAGE: "dagster-ucd_image-document-processing"
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
     expose:
       - "4001"
     networks:
@@ -138,6 +139,7 @@ services:
       DAGSTER_POSTGRES_USER: "postgres_user"
       DAGSTER_POSTGRES_PASSWORD: "postgres_password"
       DAGSTER_POSTGRES_DB: "postgres_db"
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
     volumes: # Make docker client accessible so we can terminate containers from dagit
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -161,6 +163,7 @@ services:
       DAGSTER_POSTGRES_USER: "postgres_user"
       DAGSTER_POSTGRES_PASSWORD: "postgres_password"
       DAGSTER_POSTGRES_DB: "postgres_db"
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
     volumes: # Make docker client accessible so we can launch containers using host docker
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -259,6 +262,7 @@ services:
       DAGSTER_POSTGRES_PASSWORD: "postgres_password"
       DAGSTER_POSTGRES_DB: "postgres_db"
       DAGSTER_CURRENT_IMAGE: "training-ucd"
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
     expose:
       - "4001"
     networks:
