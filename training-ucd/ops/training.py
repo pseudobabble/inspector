@@ -48,7 +48,7 @@ def get_data(context):
     destination_format = config['destination_format']
     logger.info('Getting dataset: %s', data_identifier)
     data = data_adaptor.get(data_identifier)
-    dataset = data_processor.process(data)
+    dataset = data_processor.process(data) # select the processor with desitnation format
 
     return dataset
 
