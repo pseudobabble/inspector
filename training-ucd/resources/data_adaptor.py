@@ -1,12 +1,26 @@
-from dagster import resource
+from dagster import resource, Field, Noneable
 
-from services.data_adaptors.s3_adaptor import (
-    S3Adaptor,
-    S3AdaptorConfig
+from infrastructure.data_adaptor import (
+    DataAdaptor
 )
 
 
-@resource(config_schema=S3AdaptorConfig.get_resource_config())
-def s3_data_adaptor(init_context):
-    s3_config = S3AdaptorConfig.from_dict(init_context)
-    return S3Adaptor.configure(s3_config)
+@resource(
+    config_schema={
+        "client": str,
+        client_config_name: Field(
+            Noneable(
+                client.config.get_resource_config()
+            )
+        )
+        for client_config_name, client
+        in DataAdaptor.clients.items()
+    }
+)
+def data_adaptor(init_context):
+    config = init_context.resource_config
+
+    client_name = config["client"]
+    client_override_config = config[client_name]
+
+    return DataAdaptor(client_name, override_init_config=client_override_config)

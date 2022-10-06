@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 
-from infrastructure.data_adaptor import (
-    DataAdaptorConfig,
-    DataAdaptor
-)
+from infrastructure.service import ServiceConfig
+
 
 @dataclass
-class S3AdaptorConfig(DataAdaptorConfig):
+class S3AdaptorConfig(ServiceConfig):
     host: str
     port: str
     access_key: str
@@ -14,13 +12,9 @@ class S3AdaptorConfig(DataAdaptorConfig):
     bucket_name: str
 
 
-class S3Adaptor(DataAdaptor):
+class S3Client:
 
-    host: str = None
-    port: str = None
-    access_key: str
-    secret_key: str
-    bucket_name: str
+    config = S3AdaptorConfig
 
     def __init__(config: S3AdaptorConfig):
         self.vendor_client = Minio(
@@ -28,6 +22,7 @@ class S3Adaptor(DataAdaptor):
             access_key=config.access_key,
             secret_key=config.secret_key,
         )
+        self.bucket_name = config.bucket_name
         self._ensure_bucket_exists()
         super().__init__(config)
 

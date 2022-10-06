@@ -18,7 +18,7 @@ class ServiceConfig:
     def from_dict(cls, config: dict):
         return cls(**{
             key: value
-            for key, value in env.items()
+            for key, value in config.items()
             if key in inspect.signature(cls).parameters
         })
 
@@ -45,4 +45,6 @@ class Service(ABC):
     @classmethod
     @abstractmethod
     def configure(cls, config: ServiceConfig) -> 'Service':
-        return cls(config)
+        for key, value in config:
+            if hasattr(cls, k):
+                setattr(cls, v)
