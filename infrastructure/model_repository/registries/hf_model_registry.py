@@ -7,19 +7,22 @@ from transformers import (
     AutoModelForTokenClassification
 )
 
-from infrastructure.model_repository import (
-    ModelRepositoryConfig,
-    ModelRepository
+from infrastructure.service import (
+    ServiceConfig
 )
 
 
 @dataclass
-class HFModelRepositoryConfig(ModelRepositoryConfig):
+class HFModelRegistryConfig(ServiceConfig):
     """"""
 
-class HFModelRepository(ModelRepositoryConfig):
+
+class HFModelRegistry:
+
+    config = HFModelRegistryConfig
 
     model_classes = {
+        AutoModel.__name__: AutoModel,
         AutoModelForTokenClassification.__name__: AutoModelForTokenClassification,
         AutoModelForSequenceClassification.__name__: AutoModelForSequenceClassification,
     }

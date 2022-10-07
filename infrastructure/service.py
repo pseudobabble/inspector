@@ -1,5 +1,6 @@
+import os
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 import inspect
 
 
@@ -15,15 +16,24 @@ class ServiceConfig:
     """
 
     @classmethod
+    def from_env(cls):
+        # TODO: field names need to be same as env names, fix
+        return cls(**{
+            key: value
+            for key, value in dict(os.environ).items()
+            if key in fields(cls)
+        })
+
+    @classmethod
     def from_dict(cls, config: dict):
         return cls(**{
             key: value
             for key, value in config.items()
-            if key in inspect.signature(cls).parameters
+            if key in fields(cls)
         })
 
     @classmethod
-    def get_resource_config(cls):
+    def get_config(cls):
         parameters = inspect.signature(cls).parameters
 
         return {

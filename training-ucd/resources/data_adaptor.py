@@ -10,7 +10,7 @@ from infrastructure.data_adaptor import (
         "client": str,
         client_config_name: Field(
             Noneable(
-                client.config.get_resource_config()
+                client.resource_config.get_config()
             )
         )
         for client_config_name, client

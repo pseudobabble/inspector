@@ -1,22 +1,26 @@
 from dagster import resource
 
-from services.model.hf_model_repository import (
-    HFModelRepository,
-    HFModelRepositoryConfig
-)
-from services.model.s3_model_repository import (
-    S3ModelRepository,
-    S3ModelRepositoryConfig
+from infrastructure.model_repository import (
+    ModelRepository
 )
 
 
-@resource(config_schema=HFModelRepositoryConfig.get_resource_config())
-def hf_model_repository(init_context):
-    hf_config = HFModelRepositoryConfig.from_dict(init_context)
-    return HFModelRepository.configure(hf_config)
+@resource(
+    config_schema={
+        "registry": str,
+        registry_config_name: Field(
+            Noneable(
+                registry.config.get_resource_config()
+            )
+        )
+        for registry_config_name, registry
+        in ModelRepository.registries.items()
+    }
+)
+def (init_context):
+    config = init_context.resource_config
 
+    registry_name = config["registry"]
+    registry_override_config = config[registry_name]
 
-@resource(config_schema=S3ModelRepositoryConfig.get_resource_config())
-def s3_model_repository(init_context):
-    s3_config = S3RepositoryConfig.from_dict(init_context)
-    return S3ModelRepository.configure(s3_config)
+    return ModelRepository(registry_name, override_init_config=registry_override_config)
