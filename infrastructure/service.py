@@ -51,10 +51,3 @@ class Service(ABC):
     achieved with @op config, which is then passed to the service
     method called in the @op.
     """
-
-    @classmethod
-    @abstractmethod
-    def configure(cls, config: ServiceConfig) -> 'Service':
-        for key, value in config:
-            if hasattr(cls, k):
-                setattr(cls, v)

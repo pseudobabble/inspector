@@ -30,7 +30,7 @@ class HFModelRegistry:
     def __init__(self, config: ModelRepositoryConfig):
         super().__init__(config)
 
-    def get(self, model_name: str, model_class_name: str):
+    def get(self, model_name: str, model_class_name: str, *args, **kwargs):
         model_class = self.model_classes.get(model_class_name, AutoModel)
 
         return model_class.from_pretrained(model_name)

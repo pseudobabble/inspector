@@ -48,8 +48,8 @@ class ModelRepository(Service):
         else:
             self.registry = registry()
 
-    def get(self, location, model_identifier, *args, **kwargs):
-        return self.registry.get(location, model_identifier, args, kwargs)
+    def get(self, model_identifier: str, location: str, *args, **kwargs):
+        return self.registry.get(model_identifier, location, *args, **kwargs)
 
-    def put(self, location, model_identifier, model, *args, **kwargs):
-        return self.registry.put(location, model_identifier, model, args, kwargs)
+    def put(self, model_identifier: str, location, model: str, *args, **kwargs):
+        return self.registry.put(model_identifier, location, model, *args, **kwargs)

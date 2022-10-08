@@ -32,6 +32,7 @@ class S3ModelRepository(ModelRepositoryConfig):
             access_key=config.access_key,
             secret_key=config.secret_key,
         )
+        self.bucket = config.bucket
         self._ensure_bucket_exists()
         super().__init__(config)
 
@@ -39,7 +40,8 @@ class S3ModelRepository(ModelRepositoryConfig):
         if not self.vendor_client.bucket_exists(self.bucket_name):
             self.vendor_client.make_bucket(self.bucket_name)
 
-    def put(self, key, value):
+    def put(self, model_filename: str, directory: str, value: Any, *args, **kwargs):
+        key = f"{directory}/{filename}"
         try:
             serialised_value = io.BytesIO(value)
             response = self.vendor_client.put_object(
@@ -54,7 +56,8 @@ class S3ModelRepository(ModelRepositoryConfig):
         except Exception as e:  # TODO: fix this
             raise e
 
-    def get(self, key):
+    def get(self, model_identifier: str, location: str, *args, **kwargs):
+        key = f"{directory}/{filename}"
         try:
             response = self.vendor_client.get_object(self.bucket_name, key)
             # TODO: add error handling

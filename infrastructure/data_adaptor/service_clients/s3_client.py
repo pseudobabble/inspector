@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from typing import Any
+from dataclasses import dataclass, asdict
 
 from infrastructure.service import ServiceConfig
 
@@ -16,7 +17,12 @@ class S3Client:
 
     resource_config = S3AdaptorConfig
 
-    def __init__(config: S3AdaptorConfig = S3AdaptorConfig.from_env()):
+    @classmethod
+    def configure(cls, config: S3AdaptorConfig):
+        return cls(**asdict())
+
+    def __init__(self, config: S3AdaptorConfig = None):
+        config = config or S3AdaptorConfig.from_env()
         self.vendor_client = Minio(
             endpoint=f"{config.host}:{config.port}",
             access_key=config.access_key,
