@@ -1,27 +1,10 @@
-from dataclasses import dataclass
+from typing import Optional
 
-from .service import Service, ServiceConfig
+from infrastructure.service import Service
+
 from .registries.hf_model_registry import HFModelRegistry
 from .registries.s3_model_registry import S3ModelRegistry
-from .registries.mlflow_model_registry import MLFlowModelRegistry
 
-
-
-@dataclass
-class ModelRepositoryConfig(ServiceConfig):
-    """
-    This class is designed to hold ModelPersister __init__ configuration.
-
-    The class will be used like:
-
-    ```
-    persister_config = ModelPersisterConfig(
-        some_kwarg=some_value,
-        etc=etc
-    )
-    persister = MyModelPersister.configure(**persister_config)
-    ```
-    """
 
 
 class ModelRepository(Service):
@@ -35,15 +18,14 @@ class ModelRepository(Service):
 
     registries = {
         'hf_model_registry': HFModelRegistry,
-        's3_model_registry': S3ModelRegistry,
-        'mlflow_model_registry': MLFlowModelRegistry
+        's3_model_registry': S3ModelRegistry
     }
 
     def __init__(self, registry_name: str, override_init_config: Optional[dict] = None):
         registry = self.registries[registry_name]
-        registry_config = registry.config.from_dict(override_init_config)
 
         if override_init_config:
+            registry_config = registry.resource_config.from_dict(override_init_config)
             self.registry = registry(registry_config)
         else:
             self.registry = registry()

@@ -3,6 +3,7 @@ from dataclasses import dataclass, asdict
 
 from infrastructure.service import ServiceConfig
 
+from minio import Minio
 
 @dataclass
 class S3AdaptorConfig(ServiceConfig):
@@ -16,10 +17,6 @@ class S3AdaptorConfig(ServiceConfig):
 class S3Client:
 
     resource_config = S3AdaptorConfig
-
-    @classmethod
-    def configure(cls, config: S3AdaptorConfig):
-        return cls(**asdict())
 
     def __init__(self, config: S3AdaptorConfig = None):
         config = config or S3AdaptorConfig.from_env()

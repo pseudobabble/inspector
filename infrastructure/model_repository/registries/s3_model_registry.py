@@ -1,16 +1,16 @@
 import io
+from typing import Any
 from dataclasses import dataclass
 
-from infrastructure.model_repository import (
-    ModelRepositoryConfig,
-    ModelRepository
+from infrastructure.service import (
+    ServiceConfig
 )
 
 from minio import Minio
 
 
 @dataclass
-class S3ModelRepositoryConfig(ModelRepositoryConfig):
+class S3ModelRegistryConfig(ServiceConfig):
     host: str
     port: str
     access_key: str
@@ -18,15 +18,11 @@ class S3ModelRepositoryConfig(ModelRepositoryConfig):
     bucket_name: str
 
 
-class S3ModelRepository(ModelRepositoryConfig):
+class S3ModelRegistry:
 
-    host: str = None
-    port: str = None
-    access_key: str
-    secret_key: str
-    bucket_name: str
+    resource_config = S3ModelRegistryConfig
 
-    def __init__(config: S3ModelRepositoryConfig):
+    def __init__(config: S3ModelRegistryConfig):
         self.vendor_client = Minio(
             endpoint=f"{config.host}:{config.port}",
             access_key=config.access_key,

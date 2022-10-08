@@ -19,16 +19,13 @@ class HFModelRegistryConfig(ServiceConfig):
 
 class HFModelRegistry:
 
-    config = HFModelRegistryConfig
+    resource_config = HFModelRegistryConfig
 
     model_classes = {
         AutoModel.__name__: AutoModel,
         AutoModelForTokenClassification.__name__: AutoModelForTokenClassification,
         AutoModelForSequenceClassification.__name__: AutoModelForSequenceClassification,
     }
-
-    def __init__(self, config: ModelRepositoryConfig):
-        super().__init__(config)
 
     def get(self, model_name: str, model_class_name: str, *args, **kwargs):
         model_class = self.model_classes.get(model_class_name, AutoModel)

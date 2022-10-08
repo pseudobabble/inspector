@@ -28,8 +28,7 @@ class DataAdaptor(Service):
             self.client = client()
 
     def get(self, data_identifier: str, location: str, *args, **kwargs):
-        result = self.client.get(data_identifier, location, *args, **kwargs)
-        return result
+        return self.client.get(data_identifier, location, *args, **kwargs)
 
     def put(self, data_identifier: str, location: str, value: Any, *args, **kwargs):
         return self.client.put(data_identifier, location, value, *args, **kwargs)
