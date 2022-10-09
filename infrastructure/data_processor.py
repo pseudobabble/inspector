@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from infrastructure.service import Service, ServiceConfig
 
-from .processors.to_hf_dataset import ToHFDataset
+from infrastructure.processors.to_hf_dataset import ToHFDataset
 
 
 class DataProcessor(Service):

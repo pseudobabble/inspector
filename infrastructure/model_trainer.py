@@ -1,9 +1,9 @@
-from abc import ABC, abstractmethod
+from typing import Optional
 from dataclasses import dataclass
 
-from .service import ServiceConfig
+from infrastructure.service import ServiceConfig
 
-from .trainers.sklearn_trainer import SKLearnTrainer
+from infrastructure.trainers.sklearn_trainer import SKLearnTrainer
 
 
 

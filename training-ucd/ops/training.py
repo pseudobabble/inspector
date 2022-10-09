@@ -7,7 +7,7 @@ from dagster import op
         'model_location': str
     },
     required_resource_keys={
-        "model_repository"
+        "sklearn_model_repository"
     }
 )
 def get_model(context):
@@ -54,7 +54,7 @@ def get_data(context):
 
 @op(
     required_resource_keys={
-        "trainer"
+        "model_trainer"
     }
 )
 def train_model(model, data):

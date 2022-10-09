@@ -1,6 +1,6 @@
 from dagster import resource, Field, Noneable
 
-from infrastructure.data_adaptor.data_adaptor import (
+from infrastructure.data_adaptor import (
     DataAdaptor
 )
 

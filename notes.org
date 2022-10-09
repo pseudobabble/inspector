@@ -152,6 +152,7 @@ file:~/code/python/inspector/webapp/backend/document_processing/document_process
 **** Freddie?
 - Dscribe
 ** Project Restructure
+
 *** op and resource libraries?
 **** source integration resources and ops to retrieve
 ***** Sharepoint
@@ -221,6 +222,11 @@ def get_data(context):
 *** data processing ucd(s)
 **** jupyter
 *** training & evaluation ucd
+**** TODO UCDs per library
+generic resources in infrastructure
+specific resource clients/strategies in the ucd
+so an sklearn-ucd would be able to train with the ModelTrainer
+but would use the trainers specified in the ucd
 *** model application ucd
 *** webapps and front-ends
 ** Demo use cases

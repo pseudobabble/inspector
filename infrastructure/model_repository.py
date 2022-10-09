@@ -2,9 +2,9 @@ from typing import Optional
 
 from infrastructure.service import Service
 
-from .registries.hf_model_registry import HFModelRegistry
-from .registries.s3_model_registry import S3ModelRegistry
-from .registries.sklearn_model_registry import SKLearnModelRegistry
+from infrastructure.registries.hf_model_registry import HFModelRegistry
+from infrastructure.registries.s3_model_registry import S3ModelRegistry
+from infrastructure.registries.sklearn_model_registry import SKLearnModelRegistry
 
 
 

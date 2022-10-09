@@ -1,4 +1,4 @@
-from dagster import resource
+from dagster import resource, Field, Noneable
 
 from infrastructure import (
     ModelRepository
@@ -9,7 +9,7 @@ from infrastructure import (
         "registry": str,
         **{registry_config_name: Field(
             Noneable(
-                registry.resource_config.get_resource_config()
+                registry.resource_config.get_config()
             )
         )
         for registry_config_name, registry

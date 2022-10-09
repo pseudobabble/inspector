@@ -1,6 +1,6 @@
 from dagster import resource, Field, Noneable
 
-from infrastructure.model_trainer.model_trainer import (
+from infrastructure import (
     ModelTrainer
 )
 
@@ -17,7 +17,7 @@ from infrastructure.model_trainer.model_trainer import (
         in ModelTrainer.trainers.items()}
     }
 )
-def data_adaptor(init_context):
+def model_trainer(init_context):
     config = init_context.resource_config
 
     trainer_name = config["trainer"]

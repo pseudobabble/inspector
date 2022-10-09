@@ -1,6 +1,6 @@
 from dagster import resource, Field, Noneable
 
-from infrastructure.data_processor.data_processor import (
+from infrastructure import (
     DataProcessor
 )
 
@@ -17,7 +17,7 @@ from infrastructure.data_processor.data_processor import (
         in DataProcessor.processors.items()}
     }
 )
-def data_adaptor(init_context):
+def data_processor(init_context):
     config = init_context.resource_config
 
     processor_name = config["processor"]

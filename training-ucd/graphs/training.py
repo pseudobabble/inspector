@@ -8,7 +8,7 @@ from ops.training import (
 )
 
 @graph
-def train_pretrained():
+def train():
     model = get_model()
     data = get_data()
     trained_model = train_model(model, data)
