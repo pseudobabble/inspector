@@ -1,7 +1,7 @@
-dagster==0.14.0
-dagster-postgres==0.14.0
-dagster-docker==0.14.0
-dagster-shell==0.14.0
+dagster==1.0.0
+dagster-postgres
+dagster-docker
+dagster-shell
 farm-haystack 
 marshmallow 
 textract 
@@ -9,5 +9,5 @@ minio
 resourceez
 azure-core==1.24.1
 tika
-protobuf
+protobuf<=3.20.0
 markupsafe==2.0.1
