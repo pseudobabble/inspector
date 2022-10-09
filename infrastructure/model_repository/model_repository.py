@@ -4,6 +4,7 @@ from infrastructure.service import Service
 
 from .registries.hf_model_registry import HFModelRegistry
 from .registries.s3_model_registry import S3ModelRegistry
+from .registries.sklearn_model_registry import SKLearnModelRegistry
 
 
 
@@ -18,7 +19,8 @@ class ModelRepository(Service):
 
     registries = {
         'hf_model_registry': HFModelRegistry,
-        's3_model_registry': S3ModelRegistry
+        's3_model_registry': S3ModelRegistry,
+        'sklearn_model_registry': SKLearnModelRegistry
     }
 
     def __init__(self, registry_name: str, override_init_config: Optional[dict] = None):

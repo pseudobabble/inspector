@@ -4,10 +4,10 @@ from dagster import op
 @op(
     config_schema={
         'model_identifier': str,
-        'model_class_name': str
+        'model_location': str
     },
     required_resource_keys={
-        "hf_model_repository"
+        "model_repository"
     }
 )
 def get_model(context):
@@ -17,13 +17,13 @@ def get_model(context):
     model_repository = context.resources.model_repository
 
     model_identifier = config['model_identifier']
-    model_class = config['model_class']
+    model_location = config['model_location']
     logger.info(
-        'Getting pretrained model %s for class %s',
+        'Getting model %s from location %s',
         model_identifier,
-        model_class
+        model_location
     )
-    model = model_repository.get(model_identifier, model_class)
+    model = model_repository.get(model_identifier, model_location)
 
     return model
 

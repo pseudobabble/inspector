@@ -1,12 +1,16 @@
 from dataclasses import dataclass
+import csv
+from collections import namedtuple
 
 from pandas import DataFrame
-from datasets import Dataset
 
-from infrastructure.service import ServiceConfig
+from infrastructure.data_processor import (
+    DataProcessorConfig,
+    DataProcessor
+)
 
 @dataclass
-class ToHFDatasetConfig(ServiceConfig):
+class CsvToDatasetProcessorConfig(DataProcessorConfig):
     """
     This class is designed to hold DataProcessor __init__ configuration.
 
@@ -22,7 +26,7 @@ class ToHFDatasetConfig(ServiceConfig):
     """
 
 
-class ToHFDataset:
+class CsvToDatasetProcessor:
     """
     This class is designed to provide a common interface for all data processors.
 
@@ -30,7 +34,11 @@ class ToHFDataset:
     method.
     """
 
-    resource_config = ToHFDatasetConfig
+    def process(self, data, *args, **kwargs):
+        Dataset = namedtuple('Dataset', ('train', 'evaluate', 'test'))
+        Split = namedtuple('Split', ('X', 'y'))
 
-    def process(self, dataframe: DataFrame, *args, **kwargs):
-        return Dataset.from_pandas(dataframe)
+        df = DataFrame.read_csv(data)
+        train = Split(X=df.)
+
+        return data

@@ -1,8 +1,26 @@
-from dagster import resource
+from dagster import resource, Field, Noneable
 
-from services.processors.to_hf_dataset import ToHFDataset
+from infrastructure.data_processor.data_processor import (
+    DataProcessor
+)
 
 
-@resource
-def to_hf_dataset(init_context):
-    return ToHFDataset()
+@resource(
+    config_schema={
+        "processor": str,
+        **{processor_config_name: Field(
+            Noneable(
+                processor.resource_config.get_config()
+            )
+        )
+        for processor_config_name, processor
+        in DataProcessor.processors.items()}
+    }
+)
+def data_adaptor(init_context):
+    config = init_context.resource_config
+
+    processor_name = config["processor"]
+    processor_override_config = config[processor_name]
+
+    return DataProcessor(processor_name, override_init_config=processor_override_config)

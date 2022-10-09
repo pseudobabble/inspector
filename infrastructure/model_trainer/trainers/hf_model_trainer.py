@@ -35,10 +35,9 @@ class HFTrainer(ModelTrainer):
     method.
     """
 
-    model_name: str = None
-    evaluator: str = None
+    resource_config = HFTrainerConfig
 
-    def train(self, model, dataset: Dataset):
+    def train(self, model, dataset: Dataset, *args, **kwargs):
         # build tokenizer
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 

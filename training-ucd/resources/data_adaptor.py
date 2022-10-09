@@ -1,6 +1,6 @@
 from dagster import resource, Field, Noneable
 
-from infrastructure.data_adaptor import (
+from infrastructure.data_adaptor.data_adaptor import (
     DataAdaptor
 )
 
@@ -8,13 +8,13 @@ from infrastructure.data_adaptor import (
 @resource(
     config_schema={
         "client": str,
-        client_config_name: Field(
+        **{client_config_name: Field(
             Noneable(
                 client.resource_config.get_config()
             )
         )
         for client_config_name, client
-        in DataAdaptor.clients.items()
+        in DataAdaptor.clients.items()}
     }
 )
 def data_adaptor(init_context):

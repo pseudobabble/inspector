@@ -1,15 +1,15 @@
 from dagster import graph
 
 from ops.training import (
-    get_pretrained_model,
+    get_model,
     get_data,
-    train_pretrained_model,
+    train_model,
     save_model
 )
 
 @graph
 def train_pretrained():
-    model = get_pretrained_model()
+    model = get_model()
     data = get_data()
-    trained_model = train_pretrained_model(model, data)
+    trained_model = train_model(model, data)
     save_model(trained_model)

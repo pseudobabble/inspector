@@ -1,23 +1,22 @@
 from dagster import resource
 
-from infrastructure.model_repository import (
+from infrastructure import (
     ModelRepository
 )
-
 
 @resource(
     config_schema={
         "registry": str,
-        registry_config_name: Field(
+        **{registry_config_name: Field(
             Noneable(
-                registry.config.get_resource_config()
+                registry.resource_config.get_resource_config()
             )
         )
         for registry_config_name, registry
-        in ModelRepository.registries.items()
+        in ModelRepository.registries.items()}
     }
 )
-def (init_context):
+def model_repository(init_context):
     config = init_context.resource_config
 
     registry_name = config["registry"]

@@ -1,6 +1,9 @@
+from typing import Optional
 from dataclasses import dataclass
 
-from .service import Service, ServiceConfig
+from infrastructure.service import Service, ServiceConfig
+
+from .processors.to_hf_dataset import ToHFDataset
 
 
 class DataProcessor(Service):
@@ -12,17 +15,17 @@ class DataProcessor(Service):
     """
 
     processors = {
-        'to_hf'
+        ToHFDataset.__name__: ToHFDataset
     }
 
     def __init__(self, processor_name: str, override_init_config: Optional[dict] = None):
         processor = self.processors[processor_name]
-        processor_config = processor.config.from_dict(override_init_config)
 
         if override_init_config:
+            processor_config = processor.resource_config.from_dict(override_init_config)
             self.processor = processor(processor_config)
         else:
             self.processor = processor()
 
     def process(self, data, *args, **kwargs):
-        return self.processor.process(data, args, kwargs)
+        return self.processor.process(data, *args, **kwargs)
