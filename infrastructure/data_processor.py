@@ -1,25 +1,12 @@
-from abc import ABC, abstractmethod
+from typing import Optional
+from dataclasses import dataclass
 
-from .service import Service
+from infrastructure.service import Service, ServiceConfig
 
-
-class DataProcessorConfig(dict):
-    """
-    This class is designed to hold DataProcessor __init__ configuration.
-
-    The class will be used like:
-
-    ```
-    processor_config = DataProcessorConfig(
-        some_kwarg=some_value,
-        etc=etc
-    )
-    processor = MyDataProcessor.configure(**processor_config)
-    ```
-    """
+from infrastructure.processors.to_hf_dataset import ToHFDataset
 
 
-class DataProcessor(ABC, Service):
+class DataProcessor(Service):
     """
     This class is designed to provide a common interface for all data processors.
 
@@ -27,6 +14,18 @@ class DataProcessor(ABC, Service):
     method.
     """
 
-    @abstractmethod
-    def process(self):
-        raise NotImplementedError('You must implement `process` for {self._class_._name_}')
+    processors = {
+        ToHFDataset.__name__: ToHFDataset
+    }
+
+    def __init__(self, processor_name: str, override_init_config: Optional[dict] = None):
+        processor = self.processors[processor_name]
+
+        if override_init_config:
+            processor_config = processor.resource_config.from_dict(override_init_config)
+            self.processor = processor(processor_config)
+        else:
+            self.processor = processor()
+
+    def process(self, data, *args, **kwargs):
+        return self.processor.process(data, *args, **kwargs)

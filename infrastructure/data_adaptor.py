@@ -1,24 +1,12 @@
-from abc import ABC, abstractmethod
+from typing import Optional, Any
 
-from .service import Service
-
-class DataAdapterConfig(dict):
-    """
-    This class is designed to hold DataAdapter __init__ configuration.
-
-    The class will be used like:
-
-    ```
-    persister_config = DataAdapterConfig(
-        some_kwarg=some_value,
-        etc=etc
-    )
-    persister = MyDataAdapter(**persister_config)
-    ```
-    """
+from infrastructure.service import Service, ServiceConfig
+from infrastructure.adaptor_clients.s3_client import S3Client
 
 
-class DataAdapter(ABC, Service):
+
+
+class DataAdaptor(Service):
     """
     This class is designed to provide a common interface for all model persisters.
 
@@ -26,10 +14,21 @@ class DataAdapter(ABC, Service):
     `put` methods.
     """
 
-    @abstractmethod
-    def get(self, *args, **kwargs):
-        raise NotImplementedError('You must implement `get` for {self._class_._name_}')
+    clients = {
+        "s3": S3Client
+    }
 
-    @abstractmethod
-    def put(self, *args, **kwargs):
-        raise NotImplementedError('You must implement `put` for {self._class_._name_}')
+    def __init__(self, client_name: str, override_init_config: Optional[dict] = None):
+        client = self.clients[client_name]
+
+        if override_init_config:
+            client_config = client.resource_config.from_dict(override_init_config)
+            self.client = client(client_config)
+        else:
+            self.client = client()
+
+    def get(self, data_identifier: str, location: str, *args, **kwargs):
+        return self.client.get(data_identifier, location, *args, **kwargs)
+
+    def put(self, data_identifier: str, location: str, value: Any, *args, **kwargs):
+        return self.client.put(data_identifier, location, value, *args, **kwargs)

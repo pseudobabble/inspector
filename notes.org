@@ -1,0 +1,245 @@
+* Notes
+** Branches
+*** pdf-conversion
++ Flow
+  + upload -> documents to db -> docs to minio
+    + sensor on minio docs -> get each from minio -> send to tika -> result to minio under same identifier
++ [X] get tika up and running
+  + [X] new pipeline to pull from minio and send to tika, and send the results back to minio
+    + [X] add a tika resource & op
+    + [X] conversion graph
+      - [X] op to get from minio
+      - [X] op to convert with tika
+      - [X] op to put conversion result to minio
+
+** Use Cases
+*** Extract Answers from Documents
+Finance, Law, Property, Insurance, etc
+1. Upload documents
+   a. Models
+      a. Document
+      b. File
+      c. Question
+      d. Label
+   b. Services
+      a. DocumentBuilder
+      b. DocumentRepository
+2. Select documents for labelling
+   a. DocumentRepository
+3. label documents
+4. build model
+5. evaluate model
+   a. Remediate
+6. extract with model
+*** Classify images
+***
+*** automatically respond to regulation
+- preprepare
+- trigger on condition
+*** Marketing
+- Competitor analytics
+  + monitor industry media
+  + generate reports
+- trigger and run campaigns
+** [2022-04-21 Thu 14:17] resources
+*** OCR
+- https://tesseract-ocr.github.io/tessdoc/
+- https://github.com/tesseract-ocr/tessdoc
+- https://github.com/madmaze/pytesseract
+-
+
+[[file:~/code/python/inspector/notes.org::*Notes][Notes]]
+*** Front End
+- https://marmelab.com/react-admin/
+- https://www.npmjs.com/package/react-mui-dropzone
+
+** [2022-04-20 Wed 23:39] keywords, little ml
+- when preprocessing, extract Ner
+- populate keyword search from ner
+- let user view docs and select new keywords
+- later
+  + when training on ToRs, use keywords as questions
+
+
+[[file:~/code/python/inspector/notes.org::*Notes][Notes]]
+** [2022-05-03 Tue 08:35] ToR requirements
+- Make cvs searchable by keyword
+  + identify keywords
+    - automatically
+    - by correction/addition - labelling
+  + cc
+- match Tors to CVs
+  + extract terms (pfm etc)
+  + extract required experience
+** Dagster + dagstermill + Jupyter == MLOpsaas
+- ops based on open source ml library components
+- jobs/pipelines based on integrations of those components
+- ability to recompose in jupyter and run via dagstermill
+  + allow importing from =lib= of @ops to notebooks?
+- necessary input validators and option providers, enums etc
+- mlflow integrated with iomanager, ops, and jobs
+-
+*** library compute function integration ops
+- create @ops and necessary @resources and expose interfaces to config
+- separate pip installable package(s) to install in jupyter container and dagster containers
+**** TODO build compute function ops
+**** scikit-learn
+**** keras
+**** tensorflow
+**** haystack
+***** huggingface models
+- group by interface
+**** etc
+*** Data source integration ops
+**** TODO build data source integration resources
+***** what about intermediate data transformations?
+- expose some pandas operations?
+- ops for standard data transformations?
+- convert all data to some schema?
+- supply graphs which can be parametrised?
+**** aws s3
+**** SQL
+**** noSQL
+**** Gdrive
+**** Sharepoint
+**** etc
+file:~/code/python/inspector/webapp/backend/document_processing/document_processing_ucd/ops/documents.py::document\['content'\] = document\['content'\]]]
+**** MLFlow tracking built in
+***** mlflow looks at and logs to s3
+***** ops log names and inputs automatically
+***** IDEA io manager that links s3 and mlflow
+****** track all intermediate assets
+*** Standard use cases as pipelines
+- use case levels? eg L1="Classify image" L2="identify object" L3="identify person"
+- for analysts
+- transient deployments - deploy cluster and launch runs
+  + client pays run costs + a bit
+- needs a webapp per industry
+**** TODO Identify industry use cases
+**** IDEA Select and build industry use cases
+*** Dagstermill + Jupyter
+- example dockerfile:
+  + https://github.com/jupyter/docker-stacks/tree/main/tensorflow-notebook
+- build the integration ops as a separate pip installable package
+- have access to standard use case pipelines
+- persistent deployment - client chooses how long or indefinite
+  + pay run costs + deployment costs + a bit
+**** TODO Integrate and test dagstermill + jupyter
+*** Jupyterlab saves notebooks to s3
+- dagstermill reads them from there
+*** Auth
+- kerberos, cloakey
+- MS, google, etc
+**** TODO add auth
+*** Setup
+- Provision cluster for client (automated)
+  + inspector setup with client config
+  + inspector + jupyterlab
+- Run jobs on spot instances, select for price, k8s
+**** Test K8s deployments
+*** Benefits
+- central environment
+- just need a browser and a connection
+- experiment -> production in one step
+*** Costs
+- check the costs on aws
+*** Webapp(s) for industry use cases
+**** We just use our framework for standard cases
+*** People to talk to
+**** Dominic
+**** Ben Sassoon
+**** Erin
+**** Freddie?
+- Dscribe
+** Project Restructure
+
+*** op and resource libraries?
+**** source integration resources and ops to retrieve
+***** Sharepoint
+***** gdrive
+***** dropbox
+***** etc
+*** common interfaces
+**** eg DataProvider
+***** =.get(DataIdentifier)=
+- common interface
+- typed configuration
+***** [#B] implementation selected by resource config at definition time
+#+begin_src python
+class MinioClient:
+
+    def __init__(self, etc):
+        self.minio = Minio(env.etc)
+
+    def get(location, filename):
+        # logic to construct whatever args the vendor client wants
+        # would be different for Azure for eg
+        key = f"{location}/{filename}"
+        self.minio.get(key)
+
+
+class DataProvider:
+
+    clients = {
+        's3': MinioClient(), # creds etc from env
+        'azure': AzureClient(),
+        'etc': ...
+    }
+
+    def __init__(self, client = 's3')
+        self.client = clients[client]
+
+    def get(location, filename, data_client=None):
+        client = self.client
+        if data_client:
+            client = self.clients[data_client]
+
+        return client.get(location, filename)
+
+
+@resource(config_schema={'client': str}) # s3, azure, etc
+def data_provider(init_context):
+    return DataProvider(init_context['client'])
+
+@op
+def get_data(context):
+    config = context.op_config
+    data_provider = context.resources.data_provider
+
+    return data_provider.get(config['location'], config['filename'])
+    # or
+    return data_provider.get(config['location'], config['filename'], client=config['client'])
+
+
+#+end_src
+
+*** document_processing_ucd
+**** text/image extraction and munging
+***** tika
+***** normalisation and storage
+***** upload goes straight to minio
+****** pipeline pulls from minio
+*** data processing ucd(s)
+**** jupyter
+*** training & evaluation ucd
+**** TODO UCDs per library
+generic resources in infrastructure
+specific resource clients/strategies in the ucd
+so an sklearn-ucd would be able to train with the ModelTrainer
+but would use the trainers specified in the ucd
+*** model application ucd
+*** webapps and front-ends
+** Demo use cases
+*** chatbot
+*** information extraction
+**** contracts etc
+*** information retrieval and categorisation
+**** marketing data analysis
+*** facial recognition
+**** identity validation
+** First things:
+*** DONE doc -> text pipeline
+CLOSED: [2022-08-28 Sun 18:44]
+*** TODO tokenization pipeline
+*** TODO training pipeline
+*** TODO evaluation pipeline

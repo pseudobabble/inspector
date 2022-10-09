@@ -1,24 +1,14 @@
-from abc import ABC, abstractmethod
+from typing import Optional
 
-from .service import Service
+from infrastructure.service import Service
 
-class ModelRepositoryConfig(dict):
-    """
-    This class is designed to hold ModelPersister __init__ configuration.
-
-    The class will be used like:
-
-    ```
-    persister_config = ModelPersisterConfig(
-        some_kwarg=some_value,
-        etc=etc
-    )
-    persister = MyModelPersister.configure(**persister_config)
-    ```
-    """
+from infrastructure.registries.hf_model_registry import HFModelRegistry
+from infrastructure.registries.s3_model_registry import S3ModelRegistry
+from infrastructure.registries.sklearn_model_registry import SKLearnModelRegistry
 
 
-class ModelRepository(ABC, Service):
+
+class ModelRepository(Service):
     """
     This class is designed to provide a common interface for all model persisters.
 
@@ -26,11 +16,24 @@ class ModelRepository(ABC, Service):
     and `retrieve` methods.
     """
 
-    @abstractmethod
-    def persist(self, *args, **kwargs):
-        raise NotImplementedError('You must implement `persist` for {self._class_._name_}')
 
+    registries = {
+        'hf_model_registry': HFModelRegistry,
+        's3_model_registry': S3ModelRegistry,
+        'sklearn_model_registry': SKLearnModelRegistry
+    }
 
-    @abstractmethod
-    def retrieve(self, *args, **kwargs):
-        raise NotImplementedError('You must implement `retrieve` for {self._class_._name_}')
+    def __init__(self, registry_name: str, override_init_config: Optional[dict] = None):
+        registry = self.registries[registry_name]
+
+        if override_init_config:
+            registry_config = registry.resource_config.from_dict(override_init_config)
+            self.registry = registry(registry_config)
+        else:
+            self.registry = registry()
+
+    def get(self, model_identifier: str, location: str, *args, **kwargs):
+        return self.registry.get(model_identifier, location, *args, **kwargs)
+
+    def put(self, model_identifier: str, location, model: str, *args, **kwargs):
+        return self.registry.put(model_identifier, location, model, *args, **kwargs)

@@ -7,7 +7,7 @@ RUN pip install \
     dagster \
     dagster-postgres \
     dagster-docker \
-    'protobuf<=3.19'
+    protobuf
 
 # Add repository code
 
