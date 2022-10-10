@@ -15,7 +15,7 @@ class DataAdaptor(Service):
     """
 
     clients = {
-        "s3": S3Client
+        S3Client.__name__: S3Client
     }
 
     def __init__(self, client_name: str, override_init_config: Optional[dict] = None):

@@ -1,3 +1,4 @@
+import io
 from typing import Any
 from dataclasses import dataclass, asdict
 
@@ -24,10 +25,10 @@ class S3Client:
             endpoint=f"{config.host}:{config.port}",
             access_key=config.access_key,
             secret_key=config.secret_key,
+            secure=False
         )
         self.bucket_name = config.bucket_name
         self._ensure_bucket_exists()
-        super().__init__(config)
 
     def _ensure_bucket_exists(self):
         if not self.vendor_client.bucket_exists(self.bucket_name):
@@ -55,6 +56,8 @@ class S3Client:
             response = self.vendor_client.get_object(self.bucket_name, key)
             retrieved_object = io.BytesIO(response.data)
             return retrieved_object
+        except Exception as e:
+            raise e
         # TODO: proper exception handling
         finally:
             response.close()

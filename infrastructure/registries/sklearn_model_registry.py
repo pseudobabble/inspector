@@ -22,6 +22,10 @@ class SKLearnModelRegistry:
         LinearRegression.__name__: LinearRegression
     }
 
+    def __init__(self, config: SKLearnModelRegistryConfig = None):
+        self.config = config
+
+
     def get(self, model_name: str, model_location: str, *args, **kwargs):
         model_class = self.model_classes[model_name]
 

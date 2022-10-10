@@ -18,6 +18,8 @@ class ServiceConfig:
     @classmethod
     def from_env(cls):
         # TODO: field names need to be same as env names, fix
+        init_args = {field.name for field in fields(cls) if field.init}
+
         return cls(**{
             key: value
             for key, value in dict(os.environ).items()
@@ -26,10 +28,12 @@ class ServiceConfig:
 
     @classmethod
     def from_dict(cls, config: dict):
+        init_args = {field.name for field in fields(cls) if field.init}
+
         return cls(**{
             key: value
             for key, value in config.items()
-            if key in fields(cls)
+            if key in init_args
         })
 
     @classmethod

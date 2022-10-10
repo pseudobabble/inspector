@@ -4,6 +4,7 @@ from infrastructure import (
     ModelRepository
 )
 
+
 @resource(
     config_schema={
         "registry": str,

@@ -7,14 +7,14 @@ from dagster import op
         'model_location': str
     },
     required_resource_keys={
-        "sklearn_model_repository"
+        "get_model_model_repository"
     }
 )
 def get_model(context):
     logger = context.log
     config = context.op_config
 
-    model_repository = context.resources.model_repository
+    model_repository = context.resources.get_model_model_repository
 
     model_identifier = config['model_identifier']
     model_location = config['model_location']
@@ -48,6 +48,7 @@ def get_data(context):
     location = config['location']
     logger.info('Getting dataset: %s', data_identifier)
     data = data_adaptor.get(data_identifier, location)
+    logger.info(data)
     dataset = data_processor.process(data)
 
     return dataset
@@ -57,11 +58,11 @@ def get_data(context):
         "model_trainer"
     }
 )
-def train_model(model, data):
+def train_model(context, model, data):
     logger = context.log
     config = context.op_config
 
-    trainer = context.resources.trainer
+    trainer = context.resources.model_trainer
     logger.info('Training')
     trained_model = trainer.train(model, data)
 
@@ -73,17 +74,17 @@ def train_model(model, data):
         'location': str
     },
     required_resource_keys={
-        "s3_model_repository"
+        "save_model_model_repository"
     }
 )
 def save_model(context, model):
     logger = context.log
     config = context.op_config
 
-    model_repository = context.resources.model_repository
+    model_repository = context.resources.save_model_model_repository
 
     model_identifier = config['trained_model_identifier']
     location = config['location']
     logger.info('Saving model %s to %s', model_identifier, location)
 
-    model_repository.put(trained_model_identifier, location, model)
+    model_repository.put(model_identifier, location, model)
