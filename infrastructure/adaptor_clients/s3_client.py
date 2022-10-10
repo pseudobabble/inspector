@@ -1,12 +1,13 @@
 import io
-import pickle
-from dataclasses import dataclass
+from typing import Any
+from dataclasses import dataclass, asdict
+
+from infrastructure.service import ServiceConfig
 
 from minio import Minio
 
-
 @dataclass
-class MinioConnectionParams:
+class S3AdaptorConfig(ServiceConfig):
     host: str
     port: str
     access_key: str
@@ -14,22 +15,27 @@ class MinioConnectionParams:
     bucket_name: str
 
 
-class MinioBlobClient:
-    def __init__(
-        self, url, access_key, secret_key, bucket_name, secure=False, serializer=pickle
-    ):
+class S3Client:
+
+    resource_config = S3AdaptorConfig
+
+    def __init__(self, config: S3AdaptorConfig = None):
+        config = config or S3AdaptorConfig.from_env()
         self.vendor_client = Minio(
-            url, access_key=access_key, secret_key=secret_key, secure=secure
+            endpoint=f"{config.host}:{config.port}",
+            access_key=config.access_key,
+            secret_key=config.secret_key,
+            secure=False
         )
-        self.bucket_name = bucket_name
-        self.serializer = serializer
+        self.bucket_name = config.bucket_name
         self._ensure_bucket_exists()
 
     def _ensure_bucket_exists(self):
         if not self.vendor_client.bucket_exists(self.bucket_name):
             self.vendor_client.make_bucket(self.bucket_name)
 
-    def put(self, key, value):
+    def put(self, filename: str, directory: str, value: Any, *args, **kwargs):
+        key = f"{directory}/{filename}"
         try:
             serialised_value = io.BytesIO(value)
             response = self.vendor_client.put_object(
@@ -44,12 +50,15 @@ class MinioBlobClient:
         except Exception as e:  # TODO: fix this
             raise e
 
-    def get(self, key):
+    def get(self, filename: str, directory: str, *args, **kwargs):
+        key = f"{directory}/{filename}"
         try:
             response = self.vendor_client.get_object(self.bucket_name, key)
-            # TODO: add error handling
             retrieved_object = io.BytesIO(response.data)
             return retrieved_object
+        except Exception as e:
+            raise e
+        # TODO: proper exception handling
         finally:
             response.close()
             response.release_conn()

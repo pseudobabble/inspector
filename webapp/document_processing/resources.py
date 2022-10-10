@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from datetime import datetime
+from pathlib import Path
 
 import flask
 from flask import request
@@ -16,6 +17,7 @@ from .builder import DocumentBuilder
 from .job_execution import semantic_search
 from .repository import DocumentRepository
 from .schemata import Document, DocumentToPipeline, PipelineToMLDocument, RawDocument
+from .blob_client import MinioBlobClient
 
 _logger = logging.getLogger(__package__)
 
@@ -101,6 +103,27 @@ class Documents(Resource):
 
         return response
 
+class UploadFile:
+
+    def __init__(self, filename: str, content: bytes) -> None:
+        self.filename = filename
+        self.content = content
+
+    @property
+    def identifier(self):
+        return md5(self.content).hexdigest()
+
+    @property
+    def storage_key(self):
+        return f"{self.identifier}/original"
+
+    @property
+    def extension(self):
+        return Path(self.filename).suffix
+
+    @property
+    def name(self):
+        return Path(self.filename).stem
 
 class Upload(Resource):
 
@@ -110,11 +133,16 @@ class Upload(Resource):
         self,
         document_builder: DocumentBuilder = DocumentBuilder(),
         document_repository: DocumentRepository = DocumentRepository(),
-        dagster_client: DagsterClient = DagsterClient(),
+        dagster_client: DagsterClient = DagsterClient()
+        blob_client: MinioBlobClient = MinioBlobClient(
+            os.getenv('AWS_ACCESS_KEY'),
+            os.getenv('AWS_SECRET_ACCESS_KEY'),
+            os.getenv('DOCUMENT_STORE_BUCKET_NAME')
+        )
     ):
         self.document_builder = document_builder
         self.document_repository = document_repository
-        self.dagster_client = dagster_client
+        self.blob_client = blob_client
 
     @transaction
     def post(self):
@@ -123,17 +151,15 @@ class Upload(Resource):
             return {
                 "error": "No file was provided, files must have the key 'file'"
             }, 422
-        file_data = [
-            {"filename": f.filename, "content": f.read()} for f in uploaded_files
-        ]
+        upload_files = [UploadFile(f.filename, f.read()) for f in uploaded_files]
 
-        document_ids = []
-        for datum in file_data:
+        for f in upload_files:
             document = self.document_builder.build(
-                {"filename": datum["filename"], "content": datum["content"]}
+                {"filename": f.filename, "content": f.content}
             )
             document_ids.append(document.id)
-            print(document.raw_content)
+            self.blob_client.put(f.storage_key, f.content)
+
 
         return {"success": 200}
 

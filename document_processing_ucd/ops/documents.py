@@ -2,104 +2,154 @@ import os
 from hashlib import md5
 from pathlib import Path
 from typing import List
+import io
 
 import torch
-from dagster import Array, op
+from dagster import Array, op, DynamicOut, DynamicOutput
 from dagster_shell import create_shell_command_op
 from haystack.schema import Document
 from sentence_transformers import SentenceTransformer, util
 
 from adaptors.rest.webhook import Answer
 
-# op which just runs a shell command
-convert_input_doc_files = create_shell_command_op(
-    (
-        "/usr/bin/soffice "
-        "--headless "
-        "--convert-to txt:Text "
-        "--outdir ./tmp/txt/ ./tmp/docs_in/*.doc ./tmp/docs_in/*.docx"
-    ),
-    name="convert_input_doc_files",
-)
+# TODO: JobCoordinator, eg TrainingCoordinator
+# its a @resource, stateless (classmethods) object
+# which provides a standard interface for interacting with
+# services, eg data retrieval/persistence clients, http clients
+# Benefits: provides indirection which allows DI,
+# - data retrieval/persistence clients, http clients, data schema validation, etc
+# eg extract out transformers code to context.resources.coordinator.transformers
+# then you can just do context.resources.coordinator.transformers.automodel.from_pretrained(model_name)
+# and you can configure which automodel is used in dagster config
+
+@op(config_schema={"data_identifier": str}, required_resource_keys={"data_repository"})
+def get_data(context):
+    logger = context.log
+    data_repository = context.resources.data_repository
+
+    data_identifier = context.op_config['data_identifier']
+    data = data_repository.get(data_identifier)
+
+    return data
 
 
 @op
-def docs_to_text(context, raw_documents: List[dict]):
-    logger = context.log
+def preprocess(context, data):
+    pass
 
-    paths = os.listdir("./tmp/docs_in")
-    logger.info("Converting docs to text: %s", paths)
+@op(
+    config_schema={
+        "autotokenizer_class": str,
+        "model_name": str,
+        "padding": bool,
+        "truncation": bool,
+        "tensor_type": str # tf/pt, TODO: enum choice
+    }
+)
+def tokenize(context, dataset):
+    automodel_class = context.op_config['automodel_class']
+    model_name = context.op_config['model_name']
+    padding = context.op_config['padding']
+    truncation = context.op_config['truncation']
+    tensor_type = context.op_config['tensor_type']
 
-    os.system(
-        "/usr/bin/soffice "
-        '"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_root" '
-        "--headless "
-        "--convert-to txt:Text "
-        "--outdir ./tmp/txt/ ./tmp/docs_in/*.doc ./tmp/docs_in/*.docx"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    encoded_input = tokenizer(dataset, padding=padding, truncation=truncation, return_tensors=tensor_type)
+
+    return encoded_input
+
+# TODO: automodel choices from enum
+@op(config_schema={'automodel_class': str, "model": str})
+def train(context, dataset):
+    automodel_class = context.op_config['automodel_class']
+    automodel = AutoModel.from_pretrained(automodel_class)
+
+    training_arguments = TrainingArguments()
+    trainer = Trainer(
+        model=automodel,
+        args=training_args,
+        train_dataset=dataset["train"].shuffle(seed=42).select(range(1000)),
+        eval_dataset=dataset["eval"].shuffle(seed=42).select(range(1000))
     )
-    logger.info("Converted files: %s", os.listdir("./tmp/txt"))
+    trainer.train()
 
-    return raw_documents
+    return automodel
 
+def save_model():
+    pass
 
-@op(required_resource_keys={"blob_client"})
-def write_input_files(context, raw_documents: List[dict]):
-    logger = context.log
-    logger.info("Received %s raw_documents", len(raw_documents))
+def load_model():
+    '''loading our own saved models, use the coordinator'''
 
-    blob_client = context.resources.blob_client
+def predict():
+    pass
 
-    logger.info("Putting %s original files to blob store", len(raw_documents))
-    logger.info("Writing %s files to filesystem for conversion", len(raw_documents))
-    for d in raw_documents:
-        # store original content
-        filename_path = Path(d["filename"])
-        file_extension = filename_path.suffix
-        filename_stem = filename_path.stem
-        key = f"{filename_stem}/original{file_extension}"
-        blob_client.put(key, d["content"])
+@op(
+    config_schema={"keys": Array(str)},
+    out=DynamicOut(str)
+)
+def get_file_keys(context):
+    config = context.op_config
+    keys = config['keys']
 
-        # write to filesystem for conversion
-        os.makedirs("./tmp/docs_in", exist_ok=True)
-        os.makedirs("./tmp/txt", exist_ok=True)
-        with open(f"./tmp/docs_in/{d['filename']}", "wb") as f:
-            f.write(d["content"])
+    for key in keys:
+        yield DynamicOutput(
+            value=key,
+            mapping_key=str(md5(key.encode('utf-8')).hexdigest())
+        )
 
-    return raw_documents
-
-
-@op(required_resource_keys={"blob_client"})
-def store_converted_files(context, raw_documents: List[dict]):
+@op(
+    required_resource_keys={"blob_client"},
+)
+def get_file_from_document_store(context, file_key: str):
     logger = context.log
 
     blob_client = context.resources.blob_client
 
-    paths = [
-        os.path.join("/opt/dagster/app/tmp/txt/", item)
-        for item in os.listdir("./tmp/txt")
-    ]
+    logger.info('Getting %s from document store', f"{file_key}")
+    file_content = blob_client.get(file_key)
 
-    logger.info("Reading txt paths: %s", paths)
-    raw_text_documents = []
-    for p in paths:
-        with open(p, "rb") as f:
-            raw_text_doc = {"filename": Path(f.name).name, "content": f.read()}
-            raw_text_documents.append(raw_text_doc)
+    return file_content
 
-    for td in raw_text_documents:
-        for rd in raw_documents:
-            if Path(rd["filename"]).stem == Path(td["filename"]).stem:
-                td["meta"] = rd["meta"]
+@op(
+    required_resource_keys={"blob_client"},
+)
+def put_file_to_document_store(context, file_key, file_content):
+    logger = context.log
 
-    logger.info("Putting %s raw_text_documents to blob store", len(raw_text_documents))
-    for d in raw_text_documents:
-        filename_path = Path(d["filename"])
-        file_extension = filename_path.suffix
-        filename_stem = filename_path.stem
-        key = f"{filename_stem}/text{file_extension}"
-        blob_client.put(key, d["content"])
+    blob_client = context.resources.blob_client
 
-    return raw_text_documents
+    logger.info('Putting %s to document store', file_key)
+    response = blob_client.put(f"{file_key}", file_content)
+
+    return response
+
+@op(
+    required_resource_keys={"tika_client"},
+)
+def convert_with_tika(context, file_content: io.BytesIO, file_type: str):
+    logger = context.log
+
+    tika_client = context.resources.tika_client
+
+    logger.info('Converting file to text with tika')
+
+    if not file_type in tika_client.allowed_types:
+        allowed_types = ', '.join(list(tika_client.allowed_types))
+        raise ValueError(
+            f'Document type {file_type} not allowed. Allowed types are {allowed_types}'
+        )
+    document_text = tika_client.convert_text(file_content.read(), file_type)
+
+
+    return document_text.encode('utf-8')
+@op
+def get_text_file_key(context, original_file_key: str):
+    return str(Path(original_file_key).with_suffix(".txt"))
+
+@op
+def get_original_file_extension(context, original_file_key: str):
+    return str(Path(original_file_key).suffix).strip('.')
 
 
 @op(

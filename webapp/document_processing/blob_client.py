@@ -1,17 +1,18 @@
 import io
 import pickle
-from dataclasses import dataclass
+from abc import abstractmethod
 
 from minio import Minio
 
 
-@dataclass
-class MinioConnectionParams:
-    host: str
-    port: str
-    access_key: str
-    secret_key: str
-    bucket_name: str
+class BlobClient:
+    @abstractmethod
+    def put(self, key, value):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get(self, key):
+        raise NotImplementedError()
 
 
 class MinioBlobClient:

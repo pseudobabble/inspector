@@ -86,22 +86,22 @@ services:
   #
   # This 'template' is how you keep your code's execution environment consistent
   # repo paired with env
-  dagster-ucd:
-    build:
-      context: ./dagster-docker
-      dockerfile: Dockerfile_user_code
-    container_name: dagster-ucd
-    image: dagster-ucd_image
-    restart: always
-    environment:
-      DAGSTER_POSTGRES_USER: "postgres_user"
-      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
-      DAGSTER_POSTGRES_DB: "postgres_db"
-      DAGSTER_CURRENT_IMAGE: "dagster-ucd_image"
-    expose:
-      - "4000"
-    networks:
-      - internal
+  # dagster-ucd:
+  #   build:
+  #     context: ./dagster-docker
+  #     dockerfile: Dockerfile_user_code
+  #   container_name: dagster-ucd
+  #   image: dagster-ucd_image
+  #   restart: always
+  #   environment:
+  #     DAGSTER_POSTGRES_USER: "postgres_user"
+  #     DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+  #     DAGSTER_POSTGRES_DB: "postgres_db"
+  #     DAGSTER_CURRENT_IMAGE: "dagster-ucd_image"
+  #   expose:
+  #     - "4000"
+  #   networks:
+  #     - internal
 
 
   dagster-ucd-document-processing:
@@ -116,6 +116,7 @@ services:
       DAGSTER_POSTGRES_PASSWORD: "postgres_password"
       DAGSTER_POSTGRES_DB: "postgres_db"
       DAGSTER_CURRENT_IMAGE: "dagster-ucd_image-document-processing"
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
     expose:
       - "4001"
     networks:
@@ -165,6 +166,7 @@ services:
       DAGSTER_POSTGRES_USER: "postgres_user"
       DAGSTER_POSTGRES_PASSWORD: "postgres_password"
       DAGSTER_POSTGRES_DB: "postgres_db"
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
     volumes: # Make docker client accessible so we can terminate containers from dagit
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -188,6 +190,7 @@ services:
       DAGSTER_POSTGRES_USER: "postgres_user"
       DAGSTER_POSTGRES_PASSWORD: "postgres_password"
       DAGSTER_POSTGRES_DB: "postgres_db"
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
     volumes: # Make docker client accessible so we can launch containers using host docker
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -254,6 +257,44 @@ services:
       - dagster-dagit
     volumes:
       - ./nginx/ui/demo:/usr/share/nginx/html/demo
+
+  tika:
+    image: apache/tika:${TIKA_TAG}-full
+    container_name: tika
+    # Override default so we can add configuration on classpath
+    entrypoint: [ "/bin/sh", "-c", "exec java -cp /customocr:/${TIKA_JAR}-${TIKA_TAG}.jar org.apache.tika.server.TikaServerCli -h 0.0.0.0 $$0 $$@"]
+    # Kept command as example but could be added to entrypoint too
+    command: -c /tika-config.xml
+    environment:
+      TIKA_CONFIG: "tika-config.xml"
+    restart: on-failure
+    ports:
+      - "9998:9998"
+    volumes:
+      # Choose the configuration you want, or add your own custom one
+      # - | ./sample-configs/customocr/tika-config-inline.xml:/tika-config.xml
+      -  ./tika/config.xml:/tika-config.xml
+    networks:
+      - internal
+
+  training-ucd:
+    build:
+      context: ./training-ucd
+      dockerfile: docker/Dockerfile
+    container_name: training-ucd
+    image: training-ucd
+    restart: always
+    environment:
+      DAGSTER_POSTGRES_USER: "postgres_user"
+      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+      DAGSTER_POSTGRES_DB: "postgres_db"
+      DAGSTER_CURRENT_IMAGE: "training-ucd"
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
+    expose:
+      - "4001"
+    networks:
+      - internal
+
 
 networks:
   internal:
