@@ -4,6 +4,15 @@ from infrastructure import (
     DataProcessor
 )
 
+from services.csv_to_dataset import CsvToDatasetProcessor
+
+
+DataProcessor.processors.update(
+    {
+        'CsvToDatasetProcessor': CsvToDatasetProcessor
+    }
+)
+
 
 @resource(
     config_schema={

@@ -4,6 +4,13 @@ from infrastructure import (
     ModelTrainer
 )
 
+from services.sklearn_trainer import SKLearnTrainer
+
+ModelTrainer.trainers.update(
+    {
+        SKLearnTrainer.__name__: SKLearnTrainer
+    }
+)
 
 @resource(
     config_schema={

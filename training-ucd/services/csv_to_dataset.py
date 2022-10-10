@@ -1,16 +1,20 @@
+import io
 from dataclasses import dataclass
 import csv
 from collections import namedtuple
 
-from pandas import DataFrame
+import pandas as pd
 
-from infrastructure.data_processor import (
-    DataProcessorConfig,
-    DataProcessor
+from infrastructure.service import (
+    ServiceConfig
 )
 
+Dataset = namedtuple('Dataset', ('train', 'evaluate'))
+TrainSplit = namedtuple('TrainSplit', ('X', 'y'))
+EvalTestSplit = namedtuple('EvalTestSplit', ('y'))
+
 @dataclass
-class CsvToDatasetProcessorConfig(DataProcessorConfig):
+class CsvToDatasetProcessorConfig(ServiceConfig):
     """
     This class is designed to hold DataProcessor __init__ configuration.
 
@@ -34,11 +38,20 @@ class CsvToDatasetProcessor:
     method.
     """
 
+    resource_config = CsvToDatasetProcessorConfig
+
     def process(self, data, *args, **kwargs):
-        Dataset = namedtuple('Dataset', ('train', 'evaluate', 'test'))
-        Split = namedtuple('Split', ('X', 'y'))
+        wrapper = io.TextIOWrapper(data, encoding='utf-8')
+        df = pd.read_csv(wrapper, delimiter=';')
 
-        df = DataFrame.read_csv(data)
-        train = Split(X=df.)
+        eval_df = df.sample(frac=0.3)
+        train_df = df.drop(index=eval_df.index)
+        dataset = Dataset(
+            train=TrainSplit(
+                X=list(zip(train_df['residual sugar'], train_df['fixed acidity'])),
+                y=train_df['quality']
+            ),
+            evaluate=EvalTestSplit(y=eval_df['quality'])
+        )
 
-        return data
+        return dataset

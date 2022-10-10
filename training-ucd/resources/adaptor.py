@@ -4,6 +4,14 @@ from infrastructure.data_adaptor import (
     DataAdaptor
 )
 
+from services.s3_client import S3Client
+
+DataAdaptor.clients.update(
+    {
+        S3Client.__name__: S3Client
+    }
+)
+
 
 @resource(
     config_schema={

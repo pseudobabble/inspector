@@ -22,15 +22,14 @@ class S3ModelRegistry:
 
     resource_config = S3ModelRegistryConfig
 
-    def __init__(config: S3ModelRegistryConfig):
+    def __init__(self, config: S3ModelRegistryConfig):
         self.vendor_client = Minio(
             endpoint=f"{config.host}:{config.port}",
             access_key=config.access_key,
             secret_key=config.secret_key,
         )
-        self.bucket = config.bucket
+        self.bucket_name = config.bucket_name
         self._ensure_bucket_exists()
-        super().__init__(config)
 
     def _ensure_bucket_exists(self):
         if not self.vendor_client.bucket_exists(self.bucket_name):

@@ -20,7 +20,7 @@ class HFModelRegistry:
 
     resource_config = HFModelRegistryConfig
 
-    def __init__(self, config: HFModelRegistryConfig):
+    def __init__(self, config: HFModelRegistryConfig = None):
         self.config = config
 
     model_classes = {
