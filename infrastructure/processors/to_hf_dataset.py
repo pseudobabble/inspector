@@ -32,5 +32,10 @@ class ToHFDataset:
 
     resource_config = ToHFDatasetConfig
 
-    def process(self, dataframe: DataFrame, *args, **kwargs):
-        return Dataset.from_pandas(dataframe)
+    def process(self, csv_bytesIO, *args, **kwargs):
+        wrapper = io.TextIOWrapper(data, encoding='utf-8')
+        df = pd.read_csv(wrapper)
+
+        dataset = Dataset.from_pandas(dataframe)
+
+        return dataset
