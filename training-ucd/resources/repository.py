@@ -4,16 +4,6 @@ from infrastructure import (
     ModelRepository
 )
 
-from services.hf_model_registry import HFModelRegistry
-from services.sklearn_model_registry import SKLearnModelRegistry
-from services.s3_model_registry import S3ModelRegistry
-
-ModelRepository.registries = {
-        SKLearnModelRegistry.__name__: SKLearnModelRegistry,
-        HFModelRegistry.__name__: HFModelRegistry,
-        S3ModelRegistry.__name__: S3ModelRegistry
-    }
-
 
 @resource(
     config_schema={

@@ -18,9 +18,9 @@ class ModelRepository(Service):
 
 
     registries = {
-        'hf_model_registry': HFModelRegistry,
-        's3_model_registry': S3ModelRegistry,
-        'sklearn_model_registry': SKLearnModelRegistry
+        HFModelRegistry.__name__: HFModelRegistry,
+        S3ModelRegistry.__name__: S3ModelRegistry,
+        SKLearnModelRegistry.__name__: SKLearnModelRegistry
     }
 
     def __init__(self, registry_name: str, override_init_config: Optional[dict] = None):

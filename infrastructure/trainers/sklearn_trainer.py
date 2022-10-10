@@ -18,6 +18,6 @@ class SKLearnTrainer:
     resource_config = SKLearnTrainerConfig
 
     def train(self, model, dataset, *args, **kwargs):
-        trained_model = model.fit(dataset.train.X, dataset.train.y, *args)
+        trained_model = model().fit(X=dataset.train.X, y=dataset.train.y, *args)
 
         return trained_model
