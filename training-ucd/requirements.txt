@@ -2,6 +2,7 @@ dagster==1.0.0
 dagster-postgres
 dagster-docker
 dagster-shell
+dagster-mlflow
 marshmallow
 minio
 resourceez
@@ -13,4 +14,6 @@ scikit-learn
 transformers[torch]
 datasets
 evaluate
+onnxmltools
+onnxruntime-gpu
 ./infrastructure-0.1-py3-none-any.whl

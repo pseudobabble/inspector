@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from infrastructure.service import Service, ServiceConfig
+from infrastructure.service import Service
 from infrastructure.adaptor_clients.s3_client import S3Client
 
 

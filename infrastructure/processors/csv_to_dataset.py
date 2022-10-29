@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import csv
 from collections import namedtuple
 
+from numpy import array
 import pandas as pd
 
 from infrastructure.service import (
@@ -10,8 +11,8 @@ from infrastructure.service import (
 )
 
 Dataset = namedtuple('Dataset', ('train', 'evaluate'))
-TrainSplit = namedtuple('TrainSplit', ('X', 'y'))
-EvalTestSplit = namedtuple('EvalTestSplit', ('y'))
+Split = namedtuple('Split', ('X', 'y'))
+
 
 @dataclass
 class CsvToDatasetProcessorConfig(ServiceConfig):
@@ -47,11 +48,26 @@ class CsvToDatasetProcessor:
         eval_df = df.sample(frac=0.3)
         train_df = df.drop(index=eval_df.index)
         dataset = Dataset(
-            train=TrainSplit(
-                X=list(zip(train_df['residual sugar'], train_df['fixed acidity'])),
+            train=Split(
+                X=array(
+                    list(
+                        zip(
+                            train_df['residual sugar'],
+                            train_df['fixed acidity']
+                        )
+                    )
+                ),
                 y=train_df['quality']
             ),
-            evaluate=EvalTestSplit(y=eval_df['quality'])
+            evaluate=Split(X=array(
+                list(
+                    zip(
+                        train_df['residual sugar'],
+                        train_df['fixed acidity']
+                    )
+                )
+            ),
+                y=eval_df['quality'])
         )
 
         return dataset

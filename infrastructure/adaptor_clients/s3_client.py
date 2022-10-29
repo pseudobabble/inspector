@@ -1,10 +1,11 @@
 import io
 from typing import Any
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 from infrastructure.service import ServiceConfig
 
 from minio import Minio
+
 
 @dataclass
 class S3AdaptorConfig(ServiceConfig):
@@ -55,10 +56,8 @@ class S3Client:
         try:
             response = self.vendor_client.get_object(self.bucket_name, key)
             retrieved_object = io.BytesIO(response.data)
+            response.close()
+            response.release_conn()
             return retrieved_object
         except Exception as e:
             raise e
-        # TODO: proper exception handling
-        finally:
-            response.close()
-            response.release_conn()

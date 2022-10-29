@@ -54,13 +54,13 @@ class S3ModelRegistry:
         except Exception as e:  # TODO: fix this
             raise e
 
-    def get(self, model_identifier: str, location: str, *args, **kwargs):
-        key = f"{directory}/{model_identifier}"
+    def get(self, filename: str, directory: str, *args, **kwargs):
+        key = f"{directory}/{filename}"
         try:
             response = self.vendor_client.get_object(self.bucket_name, key)
-            # TODO: add error handling
-            retrieved_object = io.BytesIO(response)
-            return pickle.loads(response.data)
-        finally:
+            retrieved_object = io.BytesIO(response.data)
             response.close()
             response.release_conn()
+            return retrieved_object
+        except Exception as e:
+            raise e
