@@ -13,8 +13,8 @@ from infrastructure import (
                 processor.resource_config.get_config()
             )
         )
-        for processor_config_name, processor
-        in DataProcessor.processors.items()}
+           for processor_config_name, processor
+           in DataProcessor.processors.items()}
     }
 )
 def data_processor(init_context):
@@ -23,4 +23,7 @@ def data_processor(init_context):
     processor_name = config["processor"]
     processor_override_config = config[processor_name]
 
-    return DataProcessor(processor_name, override_init_config=processor_override_config)
+    return DataProcessor(
+        processor_name,
+        override_init_config=processor_override_config
+    )

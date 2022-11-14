@@ -1,8 +1,14 @@
 from dagster import resource, Field, Noneable
 
+from services.sklearn_trainer import SKLearnTrainer
+
 from infrastructure import (
     ModelTrainer
 )
+
+ModelTrainer.trainers = {
+    SKLearnTrainer.__name__: SKLearnTrainer
+}
 
 
 @resource(
@@ -13,8 +19,8 @@ from infrastructure import (
                 trainer.resource_config.get_config()
             )
         )
-        for trainer_config_name, trainer
-        in ModelTrainer.trainers.items()}
+            for trainer_config_name, trainer
+            in ModelTrainer.trainers.items()}
     }
 )
 def model_trainer(init_context):

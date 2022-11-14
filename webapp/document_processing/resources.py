@@ -65,7 +65,8 @@ class Documents(Resource):
         else:
             documents = self.document_repository.get_all()
             many = isinstance(documents, list)
-            documents_response = self.document_schema.dump(documents, many=many)
+            documents_response = self.document_schema.dump(
+                documents, many=many)
 
         return documents_response
 
@@ -98,10 +99,12 @@ class Documents(Resource):
         """
         data_dict = flask.request.get_json()
         many = isinstance(data_dict, list)  # TODO: fix naming here
-        documents = self.document_builder.update_documents_with_ml_documents(data_dict)
+        documents = self.document_builder.update_documents_with_ml_documents(
+            data_dict)
         response = self.document_schema.dump(documents, many=many)
 
         return response
+
 
 class UploadFile:
 
@@ -125,6 +128,7 @@ class UploadFile:
     def name(self):
         return Path(self.filename).stem
 
+
 class Upload(Resource):
 
     routes = ["/documents/upload"]
@@ -133,7 +137,7 @@ class Upload(Resource):
         self,
         document_builder: DocumentBuilder = DocumentBuilder(),
         document_repository: DocumentRepository = DocumentRepository(),
-        dagster_client: DagsterClient = DagsterClient()
+        dagster_client: DagsterClient = DagsterClient(),
         blob_client: MinioBlobClient = MinioBlobClient(
             os.getenv('AWS_ACCESS_KEY'),
             os.getenv('AWS_SECRET_ACCESS_KEY'),
@@ -151,7 +155,8 @@ class Upload(Resource):
             return {
                 "error": "No file was provided, files must have the key 'file'"
             }, 422
-        upload_files = [UploadFile(f.filename, f.read()) for f in uploaded_files]
+        upload_files = [UploadFile(f.filename, f.read())
+                        for f in uploaded_files]
 
         for f in upload_files:
             document = self.document_builder.build(
@@ -159,7 +164,6 @@ class Upload(Resource):
             )
             document_ids.append(document.id)
             self.blob_client.put(f.storage_key, f.content)
-
 
         return {"success": 200}
 
@@ -210,7 +214,8 @@ class UserQuery(Resource):
         user_params = body.get("params")
         if user_params:
             args = user_params
-            _logger.info(f"Initiating query with user supplied arguments: {args}")
+            _logger.info(
+                f"Initiating query with user supplied arguments: {args}")
 
         client.submit_job_execution(
             "answer_query", run_config=semantic_search.run_config(*args)

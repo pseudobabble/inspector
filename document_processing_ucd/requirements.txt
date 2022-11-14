@@ -2,7 +2,7 @@ dagster==1.0.0
 dagster-postgres
 dagster-docker
 dagster-shell
-farm-haystack 
+farm-haystack
 marshmallow 
 textract 
 minio

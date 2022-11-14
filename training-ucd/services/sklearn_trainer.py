@@ -21,10 +21,6 @@ class SKLearnTrainer:
     resource_config = SKLearnTrainerConfig
 
     def train(self, model, dataset, *args, **kwargs):
-        model = model()
-        trained_model = Pipeline(
-            steps=('linear_regression', model.fit(X=dataset.train.X, y=dataset.train.y, *args))
-        )
+        trained_model = model().fit(X=dataset.train.X, y=dataset.train.y, *args)
         input_types = guess_initial_types(dataset.train.X, None)
-
         return trained_model, input_types

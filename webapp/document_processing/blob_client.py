@@ -46,11 +46,9 @@ class MinioBlobClient:
             raise e
 
     def get(self, key):
-        try:
-            response = self.vendor_client.get_object(self.bucket_name, key)
-            # TODO: add error handling
-            retrieved_object = io.BytesIO(response.data)
-            return retrieved_object
-        finally:
-            response.close()
-            response.release_conn()
+        response = self.vendor_client.get_object(self.bucket_name, key)
+        # TODO: add error handling
+        retrieved_object = io.BytesIO(response.data)
+        response.close()
+        response.release_conn()
+        return retrieved_object

@@ -122,6 +122,7 @@ services:
     networks:
       - internal
 
+
   # This service runs dagit, which loads your user code from the user code container.
   # Since our instance uses the QueuedRunCoordinator, any runs submitted from dagit will be put on
   # a queue and later dequeued and launched by dagster-daemon.
@@ -263,6 +264,7 @@ services:
       DAGSTER_POSTGRES_DB: "postgres_db"
       DAGSTER_CURRENT_IMAGE: "training-ucd"
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
+      MLFLOW_S3_TRACKING_URI: http://mlflow:5000
     expose:
       - "4001"
     networks:
