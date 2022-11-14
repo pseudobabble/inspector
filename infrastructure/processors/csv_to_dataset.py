@@ -62,8 +62,8 @@ class CsvToDatasetProcessor:
             evaluate=Split(X=array(
                 list(
                     zip(
-                        train_df['residual sugar'],
-                        train_df['fixed acidity']
+                        eval_df['residual sugar'],
+                        eval_df['fixed acidity']
                     )
                 )
             ),
