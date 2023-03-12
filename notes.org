@@ -1,4 +1,12 @@
 * Notes
+** Last changes before publication
+*** DTOs
+define DTOs, etc RawData, ProcessedData, Model, etc
+these are passed between the pipeline components
+*** Simplest MVPs
+**** chatbot
+**** information extraction
+**** facial recognition
 ** Branches
 *** pdf-conversion
 + Flow
@@ -238,11 +246,6 @@ but would use the trainers specified in the ucd
 *** facial recognition
 **** identity validation
 ** First things:
-*** DONE doc -> text pipeline
-CLOSED: [2022-08-28 Sun 18:44]
-*** TODO tokenization pipeline
-*** TODO training pipeline
-*** TODO evaluation pipeline
 ** Project restructure
 *** implementation specific code lives in the ucd
 sklearn specific code for example, or huggingface code
@@ -251,5 +254,5 @@ this means that each ucd doesnt get massive because the infrastructure package d
 storage integration, s3, azure etc
 maybe some standardised data processors? actually no, because they are for small amounts of processing - dedicated data pipelines should process the data as much as possible before training etc
 *** Clean up
-** Fork for each use case
-*** specific webapp & FE
+*** TODO Generic Prediction Service
+** specific webapp & FE

@@ -46,10 +46,17 @@ def onnx_predict(context, model, data):
                    'CUDAExecutionProvider', 'CPUExecutionProvider']
     )
     input_name = onnx_inference_session.get_inputs()[0].name
-    label_name = onnx_inference_session.get_outputs()[0].name
+
+    # want to get the inputs by name
+    # inputs = {
+    #     model_input.name: data.evaluate[model_input.name]
+    #     for model_input
+    #     in onnx_inference_session.get_inputs()
+    # }
+    label_names = [i.name for i in onnx_inference_session.get_outputs()]
 
     predictions = onnx_inference_session.run(
-        [label_name],
+        label_names,
         {input_name: data.evaluate.X}
     )
     logger.info(f'Predictions: {predictions}')
