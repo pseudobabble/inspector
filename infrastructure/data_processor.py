@@ -3,9 +3,6 @@ from dataclasses import dataclass
 
 from infrastructure.service import Service, ServiceConfig
 
-from infrastructure.processors.to_hf_dataset import ToHFDataset
-from infrastructure.processors.csv_to_dataset import CsvToDatasetProcessor
-
 
 class DataProcessor(Service):
     """
@@ -15,10 +12,7 @@ class DataProcessor(Service):
     method.
     """
 
-    processors = {
-        ToHFDataset.__name__: ToHFDataset,
-        CsvToDatasetProcessor.__name__: CsvToDatasetProcessor
-    }
+    processors = {}
 
     def __init__(self, processor_name: str, override_init_config: Optional[dict] = None):
         processor = self.processors[processor_name]

@@ -3,8 +3,6 @@ from dataclasses import dataclass
 
 from infrastructure.service import Service, ServiceConfig
 
-# from something import ONNXModelConverter
-
 
 class ModelConverter(Service):
     """
@@ -14,8 +12,7 @@ class ModelConverter(Service):
     method.
     """
 
-    converters = {
-    }
+    converters = {}
 
     def __init__(self, converter_name: str, override_init_config: Optional[dict] = None):
         converter = self.converters[converter_name]

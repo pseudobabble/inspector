@@ -54,8 +54,6 @@ def get_data(context):
     logger.info(data)
     dataset = data_processor.process(data)
 
-    logger.info(dataset.train.X)
-
     return dataset
 
 
@@ -72,7 +70,6 @@ def train_model(context, model, data):
     logger = context.log
     config = context.op_config
 
-    logger.info(data.train.X)
     trainer = context.resources.model_trainer
     logger.info('Training')
     trained_model, model_inputs = trainer.train(model, data)

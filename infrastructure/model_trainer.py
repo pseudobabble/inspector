@@ -3,8 +3,6 @@ from dataclasses import dataclass
 
 from infrastructure.service import ServiceConfig
 
-from infrastructure.trainers.sklearn_trainer import SKLearnTrainer
-
 
 
 @dataclass
@@ -32,9 +30,7 @@ class ModelTrainer:
     method.
     """
 
-    trainers = {
-        SKLearnTrainer.__name__: SKLearnTrainer
-    }
+    trainers = {}
 
     def __init__(self, trainer_name: str, override_init_config: Optional[dict] = None):
         trainer = self.trainers[trainer_name]
