@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from diffusers import StableDiffusionPipeline
 from transformers import (
     AutoModel,
     AutoModelForSequenceClassification,
@@ -13,7 +14,7 @@ from infrastructure.service import (
 
 @dataclass
 class HFModelRegistryConfig(ServiceConfig):
-    """"""
+    from_pretrained: dict
 
 
 class HFModelRegistry:
@@ -27,12 +28,14 @@ class HFModelRegistry:
         AutoModel.__name__: AutoModel,
         AutoModelForTokenClassification.__name__: AutoModelForTokenClassification,
         AutoModelForSequenceClassification.__name__: AutoModelForSequenceClassification,
+        StableDiffusionPipeline.__name__: StableDiffusionPipeline
     }
 
     def get(self, model_name: str, model_class_name: str, *args, **kwargs):
         model_class = self.model_classes.get(model_class_name, AutoModel)
 
-        return model_class.from_pretrained(model_name)
+        from_pretrained_args = self.config.get('from_pretrained', {})
+        return model_class.from_pretrained(model_name, **from_pretrained_args)
 
     def put(self, *args, **kwargs):
         raise RuntimeError('Cannot `put` with {self.__class__.__name__}')
