@@ -2,9 +2,7 @@ from typing import Optional
 
 from infrastructure.service import Service
 
-from infrastructure.registries.hf_model_registry import HFModelRegistry
 from infrastructure.registries.s3_model_registry import S3ModelRegistry
-from infrastructure.registries.sklearn_model_registry import SKLearnModelRegistry
 
 
 
@@ -18,9 +16,7 @@ class ModelRepository(Service):
 
 
     registries = {
-        HFModelRegistry.__name__: HFModelRegistry,
         S3ModelRegistry.__name__: S3ModelRegistry,
-        SKLearnModelRegistry.__name__: SKLearnModelRegistry
     }
 
     def __init__(self, registry_name: str, override_init_config: Optional[dict] = None):
