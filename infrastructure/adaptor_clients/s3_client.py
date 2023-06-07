@@ -1,10 +1,11 @@
 import io
-from typing import Any
 from dataclasses import dataclass
-
-from infrastructure.service import ServiceConfig
+from typing import Any
 
 from minio import Minio
+
+from infrastructure.data_adaptor import Adaptor
+from infrastructure.service import ServiceConfig
 
 
 @dataclass
@@ -16,8 +17,7 @@ class S3AdaptorConfig(ServiceConfig):
     bucket_name: str
 
 
-class S3Client:
-
+class S3Client(Adaptor):
     resource_config = S3AdaptorConfig
 
     def __init__(self, config: S3AdaptorConfig = None):
@@ -26,7 +26,7 @@ class S3Client:
             endpoint=f"{config.host}:{config.port}",
             access_key=config.access_key,
             secret_key=config.secret_key,
-            secure=False
+            secure=False,
         )
         self.bucket_name = config.bucket_name
         self._ensure_bucket_exists()

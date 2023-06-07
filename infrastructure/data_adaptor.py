@@ -1,9 +1,26 @@
-from typing import Optional, Any
+from abc import ABC, abstractmethod
+from typing import Any, Optional
 
-from infrastructure.service import Service
 from infrastructure.adaptor_clients.s3_client import S3Client
+from infrastructure.service import Service, ServiceResult
 
 
+class AdaptorResult(ServiceResult):
+    ...
+
+
+class AdaptorClient(ABC):
+    @abstractmethod
+    def get(self, *args, **kwargs) -> AdaptorResult:
+        raise NotImplementedError(
+            "You must implement `get` on {self.__class__.__name__}`"
+        )
+
+    @abstractmethod
+    def put(self, *args, **kwargs) -> AdaptorResult:
+        raise NotImplementedError(
+            "You must implement `put` on {self.__class__.__name__}`"
+        )
 
 
 class DataAdaptor(Service):
@@ -14,9 +31,7 @@ class DataAdaptor(Service):
     `put` methods.
     """
 
-    clients = {
-        S3Client.__name__: S3Client
-    }
+    clients = {S3Client.__name__: S3Client}
 
     def __init__(self, client_name: str, override_init_config: Optional[dict] = None):
         client = self.clients[client_name]
@@ -27,8 +42,16 @@ class DataAdaptor(Service):
         else:
             self.client = client()
 
-    def get(self, data_identifier: str, location: str, *args, **kwargs):
-        return self.client.get(data_identifier, location, *args, **kwargs)
+    def get(
+        self, data_identifier: str, location: str, *args, **kwargs
+    ) -> AdaptorResult:
+        data = self.client.get(data_identifier, location, *args, **kwargs)
 
-    def put(self, data_identifier: str, location: str, value: Any, *args, **kwargs):
-        return self.client.put(data_identifier, location, value, *args, **kwargs)
+        return AdaptorResult(result=data)
+
+    def put(
+        self, data_identifier: str, location: str, value: Any, *args, **kwargs
+    ) -> AdaptorResult:
+        data = self.client.put(data_identifier, location, value, *args, **kwargs)
+
+        return AdaptorResult(result=data)

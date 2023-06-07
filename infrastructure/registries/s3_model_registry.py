@@ -1,13 +1,12 @@
 import io
 import pickle
-from typing import Any
 from dataclasses import dataclass
-
-from infrastructure.service import (
-    ServiceConfig
-)
+from typing import Any
 
 from minio import Minio
+
+from infrastructure.model_repository import Repository
+from infrastructure.service import ServiceConfig
 
 
 @dataclass
@@ -17,18 +16,19 @@ class S3ModelRegistryConfig(ServiceConfig):
     access_key: str
     secret_key: str
     bucket_name: str
+    secure: bool = False
 
 
-class S3ModelRegistry:
-
+class S3ModelRegistry(Repository):
     resource_config = S3ModelRegistryConfig
 
     def __init__(self, config: S3ModelRegistryConfig = None):
+        config = config or S3ModelRegistryConfig.from_env()
         self.vendor_client = Minio(
             endpoint=f"{config.host}:{config.port}",
             access_key=config.access_key,
             secret_key=config.secret_key,
-            secure=False
+            secure=False,
         )
         self.bucket_name = config.bucket_name
         self._ensure_bucket_exists()

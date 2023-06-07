@@ -1,12 +1,37 @@
-from typing import Optional
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Optional
 
-from infrastructure.service import ServiceConfig
+from infrastructure.service import ServiceConfig, ServiceResult
 
+
+class TrainerResult(ServiceResult):
+    """
+    This class represents the result of model training.
+
+    All Trainer.train calls should return an instance of this class
+    """
+
+
+class Trainer(ABC):
+    """
+    This class is designed to provide a common interface for all data trainers.
+
+    You should subclass this class for your use case, and implement the `train`
+    method.
+    """
+
+    resource_config: Optional[ServiceConfig]
+
+    @abstractmethod
+    def train(self, *args, **kwargs) -> TrainerResult:
+        raise NotImplementedError(
+            "You must implement `train` on {self.__class__.__name__}`"
+        )
 
 
 @dataclass
-class ModelTrainerConfig(ServiceConfig):
+class TrainerConfig(ServiceConfig):
     """
     This class is designed to hold Trainer __init__ configuration.
 
@@ -17,19 +42,12 @@ class ModelTrainerConfig(ServiceConfig):
         some_kwarg=some_value,
         etc=etc
     )
-    trainer = MyTrainer.configure(trainer_config)
+    trainer = MyTrainer(trainer_config)
     ```
     """
 
 
-class ModelTrainer:
-    """
-    This class is designed to provide a common interface for all data trainers.
-
-    You should subclass this class for your use case, and implement the `train`
-    method.
-    """
-
+class ModelTrainer(Service):
     trainers = {}
 
     def __init__(self, trainer_name: str, override_init_config: Optional[dict] = None):
@@ -42,4 +60,6 @@ class ModelTrainer:
             self.trainer = trainer()
 
     def train(self, model, data, *args, **kwargs):
-        return self.trainer.train(model, data, *args, **kwargs)
+        trained_model = self.trainer.train(model, data, *args, **kwargs)
+
+        return TrainerResult(result=trained_model)
