@@ -11,8 +11,27 @@ class ConverterResult(ServiceResult):
     """
 
 
+@dataclass
+class ConverterConfig(ServiceConfig):
+    """
+    This class is designed to hold Converter __init__ configuration.
+
+    The class will be used like:
+
+    ```
+    converter_config = ConverterConfig(
+        some_kwarg=some_value,
+        etc=etc
+    )
+    converter = MyConverter(trainer_config)
+    ```
+    """
+
+
 class Converter(ABC):
-    def convert(self, *args, **kwargs) -> ConverterResult:
+    resource_config = Optional[ConverterConfig]
+
+    def convert(self, model: ServiceResult, *args, **kwargs) -> ConverterResult:
         raise NotImplementedError(
             f"You must implement `convert` on {self.__class__.__name__}"
         )
@@ -40,8 +59,6 @@ class ModelConverter(Service):
             self.converter = converter()
 
     def convert(self, model: ServiceResult, *args, **kwargs):
-        if not model.result:
-            raise ValueError("Make a better error")
-        converted_model = self.converter.convert(model, input_types, *args, **kwargs)
+        converted_model = self.converter.convert(model, *args, **kwargs)
 
         return ConverterResult(result=converted_model)

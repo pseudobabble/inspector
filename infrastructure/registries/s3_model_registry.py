@@ -5,12 +5,12 @@ from typing import Any
 
 from minio import Minio
 
-from infrastructure.model_repository import Repository
+from infrastructure.model_repository import Repository, RepositoryConfig
 from infrastructure.service import ServiceConfig
 
 
 @dataclass
-class S3ModelRegistryConfig(ServiceConfig):
+class S3ModelRegistryConfig(RepositoryConfig):
     host: str
     port: str
     access_key: str

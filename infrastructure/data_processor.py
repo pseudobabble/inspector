@@ -10,6 +10,23 @@ class ProcessorResult(ServiceResult):
     """
 
 
+@dataclass
+class ProcessorConfig(ServiceConfig):
+    """
+    This class is designed to hold Processor __init__ configuration.
+
+    The class will be used like:
+
+    ```
+    processor_config = ProcessorConfig(
+        some_kwarg=some_value,
+        etc=etc
+    )
+    processor = MyProcessor(trainer_config)
+    ```
+    """
+
+
 class Processor(ABC):
     """
     This class is designed to provide a common interface for all DataProcessors.
@@ -18,8 +35,10 @@ class Processor(ABC):
     method.
     """
 
+    resource_config = Optional[ProcessorConfig]
+
     @abstractmethod
-    def process(self, *args, **kwargs) -> ProcessorResult:
+    def process(self, data: ServiceResult, *args, **kwargs) -> ProcessorResult:
         raise NotImplementedError(
             "You must implement `process` on {self.__class__.__name__}`"
         )
@@ -46,10 +65,7 @@ class DataProcessor(Service):
         else:
             self.processor = processor()
 
-    # TODO: use this pattern elsewhere
     def process(self, data: ServiceResult, *args, **kwargs):
-        if not data.result:
-            # TODO: see below
-            raise RuntimeError("Replace me with a better message")
         processed_data = self.processor.process(data, *args, **kwargs)
+
         return ProcessorResult(result=processed_data)

@@ -4,12 +4,11 @@ from typing import Any
 
 from minio import Minio
 
-from infrastructure.data_adaptor import Adaptor
-from infrastructure.service import ServiceConfig
+from infrastructure.data_adaptor import Adaptor, AdaptorConfig
 
 
 @dataclass
-class S3AdaptorConfig(ServiceConfig):
+class S3AdaptorConfig(AdaptorConfig):
     host: str
     port: str
     access_key: str

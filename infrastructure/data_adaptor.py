@@ -9,7 +9,26 @@ class AdaptorResult(ServiceResult):
     ...
 
 
+@dataclass
+class AdaptorConfig(ServiceConfig):
+    """
+    This class is designed to hold Adaptor __init__ configuration.
+
+    The class will be used like:
+
+    ```
+    adaptor_config = AdaptorConfig(
+        some_kwarg=some_value,
+        etc=etc
+    )
+    adaptor = MyAdaptor(adaptor_config)
+    ```
+    """
+
+
 class AdaptorClient(ABC):
+    resource_config = Optional[AdaptorConfig]
+
     @abstractmethod
     def get(self, *args, **kwargs) -> AdaptorResult:
         raise NotImplementedError(

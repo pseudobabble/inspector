@@ -13,23 +13,6 @@ class TrainerResult(ServiceResult):
     """
 
 
-class Trainer(ABC):
-    """
-    This class is designed to provide a common interface for all data trainers.
-
-    You should subclass this class for your use case, and implement the `train`
-    method.
-    """
-
-    resource_config: Optional[ServiceConfig]
-
-    @abstractmethod
-    def train(self, *args, **kwargs) -> TrainerResult:
-        raise NotImplementedError(
-            "You must implement `train` on {self.__class__.__name__}`"
-        )
-
-
 @dataclass
 class TrainerConfig(ServiceConfig):
     """
@@ -47,6 +30,25 @@ class TrainerConfig(ServiceConfig):
     """
 
 
+class Trainer(ABC):
+    """
+    This class is designed to provide a common interface for all data trainers.
+
+    You should subclass this class for your use case, and implement the `train`
+    method.
+    """
+
+    resource_config: Optional[TrainerConfig]
+
+    @abstractmethod
+    def train(
+        self, model: ServiceResult, data: ServiceResult, *args, **kwargs
+    ) -> TrainerResult:
+        raise NotImplementedError(
+            "You must implement `train` on {self.__class__.__name__}`"
+        )
+
+
 class ModelTrainer(Service):
     trainers = {}
 
@@ -59,7 +61,7 @@ class ModelTrainer(Service):
         else:
             self.trainer = trainer()
 
-    def train(self, model, data, *args, **kwargs):
+    def train(self, model: ServiceResult, data: ServiceResult, *args, **kwargs):
         trained_model = self.trainer.train(model, data, *args, **kwargs)
 
         return TrainerResult(result=trained_model)
