@@ -27,6 +27,8 @@ class AdaptorConfig(ServiceConfig):
 
 
 class AdaptorClient(ABC):
+    """ """
+
     resource_config = Optional[AdaptorConfig]
 
     @abstractmethod
@@ -48,9 +50,14 @@ class DataAdaptor(Service):
 
     You should subclass this class for your use case, and implement the `get` and
     `put` methods.
+
+    Clients should be added to the service at the resource layer, as follows:
+    ```
+    DataAdaptor.clients.update({StorageClient.__name__: StorageClient})
+    ```
     """
 
-    clients = {S3Client.__name__: S3Client}
+    clients = {}
 
     def __init__(self, client_name: str, override_init_config: Optional[dict] = None):
         client = self.clients[client_name]

@@ -20,7 +20,6 @@ class ServiceConfig:
 
     @classmethod
     def from_env(cls):
-        # TODO: field names need to be same as env names, fix
         init_args = {field.name for field in fields(cls) if field.init}
 
         return cls(

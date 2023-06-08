@@ -50,9 +50,7 @@ class ModelRepository(Service):
     """
 
 
-    registries = {
-        S3ModelRegistry.__name__: S3ModelRegistry,
-    }
+    registries = {}
 
     def __init__(self, registry_name: str, override_init_config: Optional[dict] = None):
         registry = self.registries[registry_name]
