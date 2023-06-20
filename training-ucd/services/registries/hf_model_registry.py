@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionOnnxPipeline
 from transformers import (
     AutoModel,
     AutoModelForSequenceClassification,
@@ -28,7 +28,7 @@ class HFModelRegistry:
         AutoModel.__name__: AutoModel,
         AutoModelForTokenClassification.__name__: AutoModelForTokenClassification,
         AutoModelForSequenceClassification.__name__: AutoModelForSequenceClassification,
-        StableDiffusionPipeline.__name__: StableDiffusionPipeline
+        StableDiffusionOnnxPipeline.__name__: StableDiffusionOnnxPipeline
     }
 
     def get(self, model_name: str, model_class_name: str, *args, **kwargs):
