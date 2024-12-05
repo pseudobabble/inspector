@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from sklearn.pipeline import Pipeline
 from skl2onnx.algebra.type_helper import guess_initial_types
+from sklearn.pipeline import Pipeline
 
-from infrastructure.service import ServiceConfig
+from infrastructure.model_trainer import Trainer, TrainerConfig
 
 
-class SKLearnTrainerConfig(ServiceConfig):
+class SKLearnTrainerConfig(TrainerConfig):
     """"""
 
 
