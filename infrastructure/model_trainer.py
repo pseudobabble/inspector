@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
-from infrastructure.service import ServiceConfig, ServiceResult
+from infrastructure.service import Service, ServiceConfig, ServiceResult
 
 
 class TrainerResult(ServiceResult):

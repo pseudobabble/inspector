@@ -1,26 +1,22 @@
-from dagster import resource, Field, Noneable
+from dagster import Field, Noneable, resource
 
-from services.sklearn_trainer import SKLearnTrainer
+from infrastructure import ModelTrainer
 
-from infrastructure import (
-    ModelTrainer
-)
+# from services.sklearn_trainer import SKLearnTrainer
+
 
 ModelTrainer.trainers = {
-    SKLearnTrainer.__name__: SKLearnTrainer
+    #    SKLearnTrainer.__name__: SKLearnTrainer
 }
 
 
 @resource(
     config_schema={
         "trainer": str,
-        **{trainer_config_name: Field(
-            Noneable(
-                trainer.resource_config.get_config()
-            )
-        )
-            for trainer_config_name, trainer
-            in ModelTrainer.trainers.items()}
+        **{
+            trainer_config_name: Field(Noneable(trainer.resource_config.get_config()))
+            for trainer_config_name, trainer in ModelTrainer.trainers.items()
+        },
     }
 )
 def model_trainer(init_context):

@@ -2,7 +2,7 @@ dagster==1.0.0
 dagster-postgres
 dagster-docker
 dagster-shell
-dagster-mlflow
+#dagster-mlflow
 marshmallow
 minio
 resourceez
@@ -11,9 +11,12 @@ protobuf<=3.20.0
 markupsafe==2.0.1
 urllib3==1.25.11
 scikit-learn
-transformers[torch]
-datasets
-evaluate
-onnxmltools
-onnxruntime-gpu
-./infrastructure-0.1-py3-none-any.whl
+pandas
+#transformers[torch]
+#datasets
+#evaluate
+#onnxmltools
+#onnxruntime-gpu
+pendulum<2.0
+sqlalchemy<2.0
+./infrastructure-1.0.0-py3-none-any.whl

@@ -1,9 +1,12 @@
 from dataclasses import dataclass
 
 from pandas import DataFrame
-from datasets import Dataset
 
 from infrastructure.service import ServiceConfig
+
+# from datasets import Dataset
+
+
 
 @dataclass
 class ToHFDatasetConfig(ServiceConfig):
@@ -33,9 +36,9 @@ class ToHFDataset:
     resource_config = ToHFDatasetConfig
 
     def process(self, csv_bytesIO, *args, **kwargs):
-        wrapper = io.TextIOWrapper(data, encoding='utf-8')
+        wrapper = io.TextIOWrapper(data, encoding="utf-8")
         df = pd.read_csv(wrapper)
 
-        dataset = Dataset.from_pandas(dataframe)
+        # dataset = Dataset.from_pandas(dataframe)
 
-        return dataset
+        return df

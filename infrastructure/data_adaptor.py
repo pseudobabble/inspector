@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Optional
 
-from infrastructure.adaptor_clients.s3_client import S3Client
-from infrastructure.service import Service, ServiceResult
+from infrastructure.service import Service, ServiceConfig, ServiceResult
 
 
 class AdaptorResult(ServiceResult):

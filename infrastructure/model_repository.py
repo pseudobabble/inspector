@@ -1,8 +1,8 @@
 from abc import ABC
+from dataclasses import dataclass
 from typing import Optional
 
-from infrastructure.registries.s3_model_registry import S3ModelRegistry
-from infrastructure.service import Service, ServiceResult
+from infrastructure.service import Service, ServiceConfig, ServiceResult
 
 
 class RepositoryResult(ServiceResult):
@@ -26,16 +26,15 @@ class RepositoryConfig(ServiceConfig):
     """
 
 
-class Repository(ABC)
-
+class Repository(ABC):
     resource_config = Optional[RepositoryConfig]
 
-    def get(self, *args, **kwargs) -> ConverterResult:
+    def get(self, *args, **kwargs):
         raise NotImplementedError(
             f"You must implement `get` on {self.__class__.__name__}"
         )
 
-    def put(self, *args, **kwargs) -> ConverterResult:
+    def put(self, *args, **kwargs):
         raise NotImplementedError(
             f"You must implement `put` on {self.__class__.__name__}"
         )
@@ -48,7 +47,6 @@ class ModelRepository(Service):
     You should subclass this class for your use case, and implement the `persist`
     and `retrieve` methods.
     """
-
 
     registries = {}
 

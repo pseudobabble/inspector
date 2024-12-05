@@ -104,23 +104,23 @@ services:
   #     - internal
 
 
-  dagster-ucd-document-processing:
-    build:
-      context: ./document_processing_ucd
-      dockerfile: docker/Dockerfile
-    container_name: dagster-ucd-document-processing
-    image: dagster-ucd_image-document-processing
-    restart: always
-    environment:
-      DAGSTER_POSTGRES_USER: "postgres_user"
-      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
-      DAGSTER_POSTGRES_DB: "postgres_db"
-      DAGSTER_CURRENT_IMAGE: "dagster-ucd_image-document-processing"
-      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
-    expose:
-      - "4001"
-    networks:
-      - internal
+  # dagster-ucd-document-processing:
+  #   build:
+  #     context: ./document_processing_ucd
+  #     dockerfile: docker/Dockerfile
+  #   container_name: dagster-ucd-document-processing
+  #   image: dagster-ucd_image-document-processing
+  #   restart: always
+  #   environment:
+  #     DAGSTER_POSTGRES_USER: "postgres_user"
+  #     DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+  #     DAGSTER_POSTGRES_DB: "postgres_db"
+  #     DAGSTER_CURRENT_IMAGE: "dagster-ucd_image-document-processing"
+  #     PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
+  #   expose:
+  #     - "4001"
+  #   networks:
+  #     - internal
 
 
   # This service runs dagit, which loads your user code from the user code container.
@@ -147,7 +147,7 @@ services:
       - internal
     depends_on:
       - dagster-postgres
-      - dagster-ucd
+      - training-ucd
 
   # This service runs the dagster-daemon process, which is responsible for taking runs
   # off of the queue and launching them, as well as creating runs from schedules or sensors.
@@ -171,85 +171,85 @@ services:
       - internal
     depends_on:
       - dagster-postgres
-      - dagster-ucd
+      - training-ucd
 
 
-  webapp:
-    build:
-      context: ./webapp
-      dockerfile: docker/Dockerfile
-    environment:
-      POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
-      POSTGRES_USER: "webapp_postgres_user"
-      POSTGRES_PASSWORD: "webapp_postgres_password"
-      POSTGRES_DB: "webapp_postgres_db"
-      AWS_ACCESS_KEY: abc123abc123
-      AWS_ACCESS_SECRET: abc123abc123
-      FILE_STORE_BUCKET_NAME: file-store
-      FLASK_APP: "/backend/app.py"
-      FLASK_ENV: "development"
-      FLASK_HOST: "0.0.0.0"
-      FLASK_DEBUG: true
-    container_name: webapp
-    ports:
-      - 8080:8080
-    networks:
-      - internal
-    depends_on:
-      - webapp-postgres
-      - dagster-dagit
-    stdin_open: true
-    tty: true
-    volumes:
-      - ./webapp:/backend
+  # webapp:
+  #   build:
+  #     context: ./webapp
+  #     dockerfile: docker/Dockerfile
+  #   environment:
+  #     POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
+  #     POSTGRES_USER: "webapp_postgres_user"
+  #     POSTGRES_PASSWORD: "webapp_postgres_password"
+  #     POSTGRES_DB: "webapp_postgres_db"
+  #     AWS_ACCESS_KEY: abc123abc123
+  #     AWS_ACCESS_SECRET: abc123abc123
+  #     FILE_STORE_BUCKET_NAME: file-store
+  #     FLASK_APP: "/backend/app.py"
+  #     FLASK_ENV: "development"
+  #     FLASK_HOST: "0.0.0.0"
+  #     FLASK_DEBUG: true
+  #   container_name: webapp
+  #   ports:
+  #     - 8080:8080
+  #   networks:
+  #     - internal
+  #   depends_on:
+  #     - webapp-postgres
+  #     - dagster-dagit
+  #   stdin_open: true
+  #   tty: true
+  #   volumes:
+  #     - ./webapp:/backend
 
-  webapp-postgres:
-    image: postgres:11
-    container_name: webapp-postgres
-    environment:
-      POSTGRES_USER: "webapp_postgres_user"
-      POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
-      POSTGRES_PASSWORD: "webapp_postgres_password"
-      POSTGRES_DB: "webapp_postgres_db"
-    expose:
-      - 5432
-    networks:
-      - internal
-    volumes:
-      - ./docker/document_store/init-document-store.sh:/docker-entrypoint-initdb.d/1-init-document-store.sh
+  # webapp-postgres:
+  #   image: postgres:11
+  #   container_name: webapp-postgres
+  #   environment:
+  #     POSTGRES_USER: "webapp_postgres_user"
+  #     POSTGRES_POSTGRESQL_USER: "webapp_postgres_user"
+  #     POSTGRES_PASSWORD: "webapp_postgres_password"
+  #     POSTGRES_DB: "webapp_postgres_db"
+  #   expose:
+  #     - 5432
+  #   networks:
+  #     - internal
+  #   volumes:
+  #     - ./docker/document_store/init-document-store.sh:/docker-entrypoint-initdb.d/1-init-document-store.sh
 
-  nginx-fe:
-    build:
-      context: ./nginx
-      dockerfile: docker/Dockerfile
-    container_name: nginx-fe
-    ports:
-      - 80:80 # Is this right?
-    networks:
-      - internal
-    depends_on:
-      - dagster-dagit
-    volumes:
-      - ./nginx/ui/demo:/usr/share/nginx/html/demo
+  # nginx-fe:
+  #   build:
+  #     context: ./nginx
+  #     dockerfile: docker/Dockerfile
+  #   container_name: nginx-fe
+  #   ports:
+  #     - 80:80 # Is this right?
+  #   networks:
+  #     - internal
+  #   depends_on:
+  #     - dagster-dagit
+  #   volumes:
+  #     - ./nginx/ui/demo:/usr/share/nginx/html/demo
 
-  tika:
-    image: apache/tika:${TIKA_TAG}-full
-    container_name: tika
-    # Override default so we can add configuration on classpath
-    entrypoint: [ "/bin/sh", "-c", "exec java -cp /customocr:/${TIKA_JAR}-${TIKA_TAG}.jar org.apache.tika.server.TikaServerCli -h 0.0.0.0 $$0 $$@"]
-    # Kept command as example but could be added to entrypoint too
-    command: -c /tika-config.xml
-    environment:
-      TIKA_CONFIG: "tika-config.xml"
-    restart: on-failure
-    ports:
-      - "9998:9998"
-    volumes:
-      # Choose the configuration you want, or add your own custom one
-      # - | ./sample-configs/customocr/tika-config-inline.xml:/tika-config.xml
-      -  ./tika/config.xml:/tika-config.xml
-    networks:
-      - internal
+  # tika:
+  #   image: apache/tika:${TIKA_TAG}-full
+  #   container_name: tika
+  #   # Override default so we can add configuration on classpath
+  #   entrypoint: [ "/bin/sh", "-c", "exec java -cp /customocr:/${TIKA_JAR}-${TIKA_TAG}.jar org.apache.tika.server.TikaServerCli -h 0.0.0.0 $$0 $$@"]
+  #   # Kept command as example but could be added to entrypoint too
+  #   command: -c /tika-config.xml
+  #   environment:
+  #     TIKA_CONFIG: "tika-config.xml"
+  #   restart: on-failure
+  #   ports:
+  #     - "9998:9998"
+  #   volumes:
+  #     # Choose the configuration you want, or add your own custom one
+  #     # - | ./sample-configs/customocr/tika-config-inline.xml:/tika-config.xml
+  #     -  ./tika/config.xml:/tika-config.xml
+  #   networks:
+  #     - internal
 
   training-ucd:
     build:
