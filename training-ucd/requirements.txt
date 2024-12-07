@@ -1,6 +1,6 @@
 dagster==1.0.0
-dagster-postgres
-dagster-docker
+dagster-postgres==0.16.0
+dagster-docker==0.16.0
 dagster-shell
 #dagster-mlflow
 marshmallow
@@ -15,7 +15,8 @@ pandas
 #transformers[torch]
 #datasets
 #evaluate
-#onnxmltools
+onnxmltools
+skl2onnx
 #onnxruntime-gpu
 pendulum<2.0
 sqlalchemy<2.0

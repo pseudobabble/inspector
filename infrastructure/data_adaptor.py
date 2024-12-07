@@ -68,16 +68,12 @@ class DataAdaptor(Service):
         else:
             self.client = client()
 
-    def get(
-        self, data_identifier: str, location: str, *args, **kwargs
-    ) -> AdaptorResult:
+    def get(self, data_identifier: str, location: str, *args, **kwargs):
         data = self.client.get(data_identifier, location, *args, **kwargs)
 
-        return AdaptorResult(result=data)
+        return data
 
-    def put(
-        self, data_identifier: str, location: str, value: Any, *args, **kwargs
-    ) -> AdaptorResult:
+    def put(self, data_identifier: str, location: str, value: Any, *args, **kwargs):
         data = self.client.put(data_identifier, location, value, *args, **kwargs)
 
-        return AdaptorResult(result=data)
+        return data

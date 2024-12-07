@@ -1,25 +1,23 @@
-from dagster import resource, Field, Noneable
+from dagster import Field, Noneable, resource
+from services.sklear_linear_regression_converter import \
+    SKLearnLinearRegressionConverter
 
-from infrastructure.model_converter import (
-    ModelConverter
-)
-
-from services.sklearn_converter import SKLearnConverter
+from infrastructure.model_converter import ModelConverter
 
 ModelConverter.converters = {
-    SKLearnConverter.__name__: SKLearnConverter
+    SKLearnLinearRegressionConverter.__name__: SKLearnLinearRegressionConverter
 }
+
 
 @resource(
     config_schema={
         "converter": str,
-        **{converter_config_name: Field(
-            Noneable(
-                converter.resource_config.get_config()
+        **{
+            converter_config_name: Field(
+                Noneable(converter.resource_config.get_config())
             )
-        )
-        for converter_config_name, converter
-        in ModelConverter.converters.items()}
+            for converter_config_name, converter in ModelConverter.converters.items()
+        },
     }
 )
 def model_converter(init_context):
@@ -28,4 +26,6 @@ def model_converter(init_context):
     converter_name = config["converter"]
     converter_override_config = config[converter_name]
 
-    return ModelConverter(converter_name, override_init_config=converter_override_config)
+    return ModelConverter(
+        converter_name, override_init_config=converter_override_config
+    )

@@ -24,20 +24,18 @@ class SKLearnLinearRegressionProcessor:
 
     def process(self, data, *args, **kwargs):
         wrapper = io.TextIOWrapper(data, encoding="utf-8")
-        df = pd.read_csv(wrapper, delimiter=";")
+        df = pd.read_csv(wrapper)
 
         eval_df = df.sample(frac=0.3)
         train_df = df.drop(index=eval_df.index)
         dataset = Dataset(
             train=Split(
-                X=array(
-                    list(zip(train_df["residual sugar"], train_df["fixed acidity"]))
-                ),
-                y=train_df["quality"],
+                X=train_df["bmi"],
+                y=train_df["target"],
             ),
             evaluate=Split(
-                X=array(list(zip(eval_df["residual sugar"], eval_df["fixed acidity"]))),
-                y=eval_df["quality"],
+                X=train_df["bmi"],
+                y=eval_df["target"],
             ),
         )
 

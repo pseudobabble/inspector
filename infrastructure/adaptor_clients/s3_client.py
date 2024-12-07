@@ -4,7 +4,7 @@ from typing import Any
 
 from minio import Minio
 
-from infrastructure.data_adaptor import Adaptor, AdaptorConfig
+from infrastructure.data_adaptor import AdaptorClient, AdaptorConfig
 
 
 @dataclass
@@ -16,7 +16,7 @@ class S3AdaptorConfig(AdaptorConfig):
     bucket_name: str
 
 
-class S3Client(Adaptor):
+class S3Client(AdaptorClient):
     resource_config = S3AdaptorConfig
 
     def __init__(self, config: S3AdaptorConfig = None):
