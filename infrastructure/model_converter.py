@@ -61,4 +61,4 @@ class ModelConverter(Service):
     def convert(self, model: ServiceResult, *args, **kwargs):
         converted_model = self.converter.convert(model, *args, **kwargs)
 
-        return ConverterResult(result=converted_model)
+        return converted_model

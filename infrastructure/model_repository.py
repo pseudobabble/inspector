@@ -62,9 +62,9 @@ class ModelRepository(Service):
     def get(self, model_identifier: str, location: str, *args, **kwargs):
         model = self.registry.get(model_identifier, location, *args, **kwargs)
 
-        return RepositoryResult(result=model)
+        return model
 
     def put(self, model_identifier: str, location, model: str, *args, **kwargs):
         response = self.registry.put(model_identifier, location, model, *args, **kwargs)
 
-        return RepositoryResult(result=response)
+        return response

@@ -69,4 +69,4 @@ class DataProcessor(Service):
     def process(self, data: ServiceResult, *args, **kwargs):
         processed_data = self.processor.process(data, *args, **kwargs)
 
-        return ProcessorResult(result=processed_data)
+        return processed_data

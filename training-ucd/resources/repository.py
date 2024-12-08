@@ -2,8 +2,10 @@ from dagster import Field, Noneable, resource
 from services.registries.sklearn_model_registry import SKLearnModelRegistry
 
 from infrastructure import ModelRepository
+from infrastructure.registries.s3_model_registry import S3ModelRegistry
 
 ModelRepository.registries.update({SKLearnModelRegistry.__name__: SKLearnModelRegistry})
+ModelRepository.registries.update({S3ModelRegistry.__name__: S3ModelRegistry})
 
 
 @resource(

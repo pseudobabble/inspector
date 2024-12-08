@@ -64,4 +64,4 @@ class ModelTrainer(Service):
     def train(self, model: ServiceResult, data: ServiceResult, *args, **kwargs):
         trained_model = self.trainer.train(model, data, *args, **kwargs)
 
-        return TrainerResult(result=trained_model)
+        return trained_model

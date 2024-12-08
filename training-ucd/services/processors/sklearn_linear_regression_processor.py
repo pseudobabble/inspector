@@ -30,12 +30,12 @@ class SKLearnLinearRegressionProcessor:
         train_df = df.drop(index=eval_df.index)
         dataset = Dataset(
             train=Split(
-                X=train_df["bmi"],
-                y=train_df["target"],
+                X=train_df["bmi"].to_numpy().reshape(-1, 1),
+                y=train_df["target"].to_numpy().reshape(-1, 1),
             ),
             evaluate=Split(
-                X=train_df["bmi"],
-                y=eval_df["target"],
+                X=train_df["bmi"].to_numpy().reshape(-1, 1),
+                y=eval_df["target"].to_numpy().reshape(-1, 1),
             ),
         )
 
