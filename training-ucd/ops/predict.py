@@ -1,7 +1,6 @@
 import numpy as np
 from dagster import In, Out, op
-
-# from onnxruntime import InferenceSession
+from onnxruntime import InferenceSession
 
 
 @op(
@@ -27,21 +26,27 @@ def onnx_predict(context, model, data):
     logger = context.log
     config = context.op_config
 
-    # onnx_inference_session = InferenceSession(
-    #     model,
-    #     providers=[
-    #         "TensorrtExecutionProvider",
-    #         "CUDAExecutionProvider",
-    #         "CPUExecutionProvider",
-    #     ],
-    # )
-    # input_name = onnx_inference_session.get_inputs()[0].name
-    # label_name = onnx_inference_session.get_outputs()[0].name
+    # Convert BytesIO object to raw bytes
+    # move this to the s3modelregistry
+    if isinstance(model, bytes):
+        model = model
+    else:
+        model = model.getvalue()
 
-    # predictions = onnx_inference_session.run(
-    #     [label_name], {input_name: data.evaluate.X}
-    # )
-    # logger.info(f"Predictions: {predictions}")
-    logger.info("reached predict")
+    onnx_inference_session = InferenceSession(
+        model,
+        providers=[
+            "TensorrtExecutionProvider",
+            "CUDAExecutionProvider",
+            "CPUExecutionProvider",
+        ],
+    )
+    input_name = onnx_inference_session.get_inputs()[0].name
+    label_name = onnx_inference_session.get_outputs()[0].name
+
+    predictions = onnx_inference_session.run(
+        [label_name], {input_name: data.evaluate.X}
+    )
+    logger.info(f"Predictions: {predictions}")
 
     return predictions
