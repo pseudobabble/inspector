@@ -1,0 +1,20 @@
+dagster==1.0.0
+dagster-postgres
+dagster-docker
+dagster-shell
+dagster-mlflow
+marshmallow
+minio
+resourceez
+azure-core==1.24.1
+protobuf<=3.20.0
+markupsafe==2.0.1
+urllib3==1.25.11
+scikit-learn
+transformers[torch]
+datasets
+evaluate
+onnxmltools
+onnxruntime-gpu
+pip install git+https://github.com/huggingface/diffusers
+./infrastructure-0.1-py3-none-any.whl
