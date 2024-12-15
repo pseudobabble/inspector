@@ -40,13 +40,13 @@ class S3ModelRegistry(Repository):
     def put(self, model_identifier: str, directory: str, value: Any, *args, **kwargs):
         key = f"{directory}/{model_identifier}"
         try:
-            pickled_model = pickle.dumps(value)
-            serialised_value = io.BytesIO(pickled_model)
+            serialised_value = io.BytesIO(value)
+
             response = self.vendor_client.put_object(
                 self.bucket_name,
                 key,
                 serialised_value,
-                length=-1,
+                length=len(value),
                 part_size=10 * 1024 * 1024,
             )
             # TODO: error handling by status code
@@ -58,7 +58,7 @@ class S3ModelRegistry(Repository):
         key = f"{directory}/{filename}"
         try:
             response = self.vendor_client.get_object(self.bucket_name, key)
-            retrieved_object = io.BytesIO(response.data)
+            retrieved_object = response.data
             response.close()
             response.release_conn()
             return retrieved_object
