@@ -13,6 +13,8 @@ from infrastructure.service import ServiceConfig
 class SKLearnLinearRegressionConverterConfig(ServiceConfig):
     """"""
 
+    opset = int
+
 
 class SKLearnLinearRegressionConverter:
     resource_config = SKLearnLinearRegressionConverterConfig
@@ -29,7 +31,7 @@ class SKLearnLinearRegressionConverter:
 
         try:
             # Convert to ONNX format
-            onnx_model = to_onnx(model, X=input_types)
+            onnx_model = to_onnx(model, X=input_types, target_opset=11)
             logger.info("Model successfully converted to ONNX format")
 
             # Serialize to string

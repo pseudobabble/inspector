@@ -1,3 +1,5 @@
+import io
+
 import numpy as np
 import onnx
 from dagster import In, Out, op
@@ -33,13 +35,21 @@ def onnx_predict(context, model, data):
     if isinstance(model, bytes):
         model = model
         logger.info("model is bytes")
-    else:
+    elif isinstance(model, io.BytesIO):
         model = model.getvalue()
         logger.info("model converted to bytes")
+    else:
+        raise RuntimeError(f"Model should be bytes or BytesIO, got {type(model)}")
 
-    onnx_model = onnx.load(model)  # Or from bytes
-    logger.info(f"Model opset version: {model.opset_import[0].version}")
     try:
+        onnx_model = onnx.load(io.BytesIO(model))  # Or from bytes
+        logger.info(f"Model opset version: {onnx_model.opset_import[0].version}")
+        logger.info(f"Model IR version: {onnx_model.ir_version}")
+    except Exception as e:
+        raise RuntimeError(f"Invalid model: {e}")
+
+    try:
+        onnx_model = onnx.load(io.BytesIO(model))
         onnx.checker.check_model(onnx_model)
         logger.info("Model validated")
     except Exception as e:
@@ -56,8 +66,8 @@ def onnx_predict(context, model, data):
     input_name = onnx_inference_session.get_inputs()[0].name
     label_name = onnx_inference_session.get_outputs()[0].name
 
-    logger.log("input name: ", input_name)
-    logger.log("label name: ", label_name)
+    logger.info(f"input name: {input_name}")
+    logger.info(f"label name: {label_name}")
     predictions = onnx_inference_session.run(
         [label_name], {input_name: data.evaluate.X}
     )
