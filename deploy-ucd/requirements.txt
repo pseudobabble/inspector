@@ -1,0 +1,10 @@
+dagster
+dagster-postgres
+dagster-docker
+dagster-shell
+minio
+protobuf
+urllib3==1.25.11
+pendulum<2.0
+docker
+./infrastructure-1.0.0-py3-none-any.whl

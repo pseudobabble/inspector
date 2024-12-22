@@ -1,0 +1,47 @@
+ops:
+  get_data:
+    config:
+      data_identifier: diabetes.csv
+      location: ''
+  get_model:
+    config:
+      model_identifier: LinearRegression
+      model_location: ''
+  save_model:
+    config:
+      location: trained-models
+      trained_model_identifier: diabetes-linear-regression
+resources:
+  data_adaptor:
+    config:
+      S3Client:
+        ENV_PREFIX: ''
+        access_key: ABC123ABC123
+        bucket_name: input-data
+        host: mlflow-s3
+        port: '9000'
+        secret_key: ABC123ABC123
+      client: S3Client
+  data_processor:
+    config:
+      processor: SKLearnLinearRegressionProcessor
+  get_model_model_repository:
+    config:
+      registry: SKLearnModelRegistry
+  model_converter:
+    config:
+      converter: SKLearnLinearRegressionConverter
+  model_trainer:
+    config:
+      trainer: SKLearnTrainer
+  save_model_model_repository:
+    config:
+      S3ModelRegistry:
+        ENV_PREFIX: ''
+        access_key: ABC123ABC123
+        bucket_name: trained-models
+        host: mlflow-s3
+        port: '9000'
+        secret_key: ABC123ABC123
+        secure: false
+      registry: S3ModelRegistry
