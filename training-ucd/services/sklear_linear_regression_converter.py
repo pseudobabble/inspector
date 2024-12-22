@@ -13,7 +13,7 @@ from infrastructure.service import ServiceConfig
 class SKLearnLinearRegressionConverterConfig(ServiceConfig):
     """"""
 
-    opset = int
+    target_opset = int
 
 
 class SKLearnLinearRegressionConverter:
@@ -23,12 +23,6 @@ class SKLearnLinearRegressionConverter:
         config = config
 
     def convert(self, model, input_types, logger, *args, **kwargs):
-        # Validate input data
-        # if not isinstance(input_types, np.ndarray):
-        #     raise ValueError("input_types must be a NumPy array")
-
-        # logger.info(f"Converting model with input shape: {input_types.shape}")
-
         try:
             # Convert to ONNX format
             onnx_model = to_onnx(model, X=input_types, target_opset=11)

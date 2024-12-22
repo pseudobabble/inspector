@@ -34,7 +34,7 @@ class SKLearnLinearRegressionProcessor:
                 y=train_df["target"].to_numpy().reshape(-1, 1),
             ),
             evaluate=Split(
-                X=train_df["bmi"].to_numpy().reshape(-1, 1),
+                X=eval_df["bmi"].to_numpy().reshape(-1, 1),
                 y=eval_df["target"].to_numpy().reshape(-1, 1),
             ),
         )
