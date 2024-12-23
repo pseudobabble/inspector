@@ -5,9 +5,9 @@ load_from:
   #     port: 4000
   #     location_name: "dagster-ucd"
   - grpc_server:
-      host: deploy-ucd
+      host: predict-ucd
       port: 4002
-      location_name: "deploy-ucd"
+      location_name: "predict-ucd"
   - grpc_server:
       host: training-ucd
       port: 4001

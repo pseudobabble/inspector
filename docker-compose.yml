@@ -271,18 +271,18 @@ services:
       - internal
 
 
-  deploy-ucd:
+  predict-ucd:
     build:
-      context: ./deploy-ucd
+      context: ./predict-ucd
       dockerfile: docker/Dockerfile
-    container_name: deploy-ucd
-    image: deploy-ucd
+    container_name: predict-ucd
+    image: predict-ucd
     restart: always
     environment:
       DAGSTER_POSTGRES_USER: "postgres_user"
       DAGSTER_POSTGRES_PASSWORD: "postgres_password"
       DAGSTER_POSTGRES_DB: "postgres_db"
-      DAGSTER_CURRENT_IMAGE: "training-ucd"
+      DAGSTER_CURRENT_IMAGE: "predict-ucd"
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
       MLFLOW_S3_TRACKING_URI: http://mlflow:5000
     expose:
