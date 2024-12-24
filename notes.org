@@ -34,6 +34,8 @@ for adaptor in adaptors:
   - Something more complex sklearn
   - something huggingface
   - something something neural network
+  - chatbot
+  - image generation
 *** Older stuff
 :PROPERTIES:
 :ID:       4da9bc7a-e513-4dc0-a13a-44f36b3441b4

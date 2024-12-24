@@ -35,22 +35,23 @@ class Tracker(ABC):
     @abstractmethod
     def create_experiment(self, name: str, description: str = None):
         """Create a new experiment and set it as active."""
-        self.current_experiment_id = self.backend.create_experiment(name, description)
-        return self.current_experiment_id
+        raise NotImplementedError(
+            "You must implement `create_experiment` on {self.__class__.__name__}`"
+        )
 
     @abstractmethod
     def set_experiment(self, experiment_id: str):
         """Switch to an existing experiment."""
-        if not self.backend.experiment_exists(experiment_id):
-            raise ValueError(f"Experiment {experiment_id} does not exist.")
-        self.current_experiment_id = experiment_id
+        raise NotImplementedError(
+            "You must implement `set_experiment` on {self.__class__.__name__}`"
+        )
 
     @abstractmethod
     def start_run(self, run_name: str = None, tags: dict = None):
         """Start a new run within the current experiment."""
-        if self.current_experiment_id is None:
-            raise ValueError("No active experiment. Create or set an experiment first.")
-        return self.backend.create_run(self.current_experiment_id, run_name, tags)
+        raise NotImplementedError(
+            "You must implement `start_run` on {self.__class__.__name__}`"
+        )
 
     @abstractmethod
     def log_metric(self, name: str, value: float, step: int = None):

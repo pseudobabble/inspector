@@ -20,4 +20,5 @@ skl2onnx
 onnxruntime-gpu
 pendulum<2.0
 sqlalchemy<2.0
+mlflow
 ./infrastructure-1.0.0-py3-none-any.whl
