@@ -17,39 +17,54 @@ services:
     volumes:
       - minio_volume:/data
 
-  # mlflow-mysql:
-  #   image: mysql/mysql-server:5.7.28
-  #   restart: unless-stopped
-  #   container_name: mlflow-mysql
-  #   expose:
-  #     - "3306"
-  #   environment:
-  #     - MYSQL_DATABASE=${MYSQL_DATABASE}
-  #     - MYSQL_USER=${MYSQL_USER}
-  #     - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-  #     - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-  #   volumes:
-  #     - db_volume:/var/lib/mysql
-  #   networks:
-  #     - internal
+  mlflow-mysql:
+    image: mysql/mysql-server:5.7.28
+    restart: unless-stopped
+    container_name: mlflow-mysql
+    expose:
+      - "3306"
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_volume:/var/lib/mysql
+      - ./mlflow/mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - internal
+    command:
+      - "--default-authentication-plugin=mysql_native_password"
+      - "--bind-address=0.0.0.0"
 
-  # mlflow:
-  #   container_name: mlflow
-  #   image: mlflow
-  #   restart: unless-stopped
-  #   build:
-  #     context: ./mlflow
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-  #     - AWS_DEFAULT_REGION=${AWS_REGION}
-  #     - MLFLOW_S3_ENDPOINT_URL=http://mlflow-s3:9000
-  #   networks:
-  #     - internal
-  #   entrypoint: bash ./wait-for-it.sh mlflow-mysql:3306 -t 90 -- mlflow server --backend-store-uri mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mlflow-mysql:3306/${MYSQL_DATABASE} --default-artifact-root s3://${AWS_BUCKET_NAME}/ -h 0.0.0.0
+  mlflow:
+    container_name: mlflow
+    image: mlflow
+    restart: unless-stopped
+    depends_on:
+      - mlflow-mysql
+      - mlflow-s3
+    build:
+      context: ./mlflow
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_REGION}
+      - MLFLOW_S3_ENDPOINT_URL=http://mlflow-s3:9000
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    networks:
+      - internal
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        exec mlflow server \
+          --backend-store-uri "mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mlflow-mysql:3306/${MYSQL_DATABASE}" \
+          --default-artifact-root "${DEFAULT_ARTIFACT_ROOT}" \
+          --host=0.0.0.0
 
   create_s3_buckets:
     image: minio/mc
