@@ -25,6 +25,9 @@ COPY ./infrastructure-1.0.0-py3-none-any.whl ./infrastructure-1.0.0-py3-none-any
 # Install python dependencies
 RUN pip --no-input install -r requirements.txt
 
+# Install the wheel separately so we can cache the prior layers
+RUN pip install --no-cache-dir ./infrastructure-1.0.0-py3-none-any.whl
+
 # Pull the source code
 COPY ./ ./
 

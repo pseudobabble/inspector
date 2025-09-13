@@ -25,26 +25,15 @@ for adaptor in adaptors:
       #+end_src
     - What do we want them to supply us with?
     - Can we just do a file share/ssh tunnel into the deployment? at least to begin with?
-** Demo
-:PROPERTIES:
-:ID:       b7f15292-0ace-45ef-825d-61ea63bf16a4
-:END:
-- 3 demos
-  - Linear regression
-  - Something more complex sklearn
-  - something huggingface
-  - something something neural network
-  - chatbot
-  - image generation
-*** Older stuff
+** [ ] Older stuff
 :PROPERTIES:
 :ID:       4da9bc7a-e513-4dc0-a13a-44f36b3441b4
 :END:
-*** Branches
+** Branches
 :PROPERTIES:
 :ID:       acf61dcd-1465-4a6f-a8cc-2c0e2e515767
 :END:
-**** pdf-conversion
+*** pdf-conversion
 :PROPERTIES:
 :ID:       5e5a04a1-ef40-451c-a408-d937f307e43a
 :END:
@@ -59,11 +48,11 @@ for adaptor in adaptors:
       - [X] op to convert with tika
       - [X] op to put conversion result to minio
 
-*** Use Cases
+** Use Cases
 :PROPERTIES:
 :ID:       ea6f1443-960e-4ae7-849c-850a8ed07bc0
 :END:
-**** Extract Answers from Documents
+** Extract Answers from Documents
 :PROPERTIES:
 :ID:       e49723cc-18e5-418e-b5d7-02073dac7f5d
 :END:
@@ -84,18 +73,18 @@ Finance, Law, Property, Insurance, etc
 5. evaluate model
    a. Remediate
 6. extract with model
-**** Classify images
+** Classify images
 :PROPERTIES:
 :ID:       5c919d56-ea42-460d-9cdf-9b716c46ce60
 :END:
 ***
-**** automatically respond to regulation
+** automatically respond to regulation
 :PROPERTIES:
 :ID:       8d9a8e9c-296e-419c-9cd6-5f3fffc7f5d0
 :END:
 - preprepare
 - trigger on condition
-**** Marketing
+** Marketing
 :PROPERTIES:
 :ID:       c5597634-623e-4a51-900c-c2939a7740fd
 :END:
@@ -103,11 +92,11 @@ Finance, Law, Property, Insurance, etc
   + monitor industry media
   + generate reports
 - trigger and run campaigns
-*** [2022-04-21 Thu 14:17] resources
+** [2022-04-21 Thu 14:17] resources
 :PROPERTIES:
 :ID:       582e25eb-13c0-4bb5-be10-af7308f95128
 :END:
-**** OCR
+*** OCR
 :PROPERTIES:
 :ID:       6b14cba4-c9b9-4ced-9f99-00f022862159
 :END:
@@ -117,14 +106,14 @@ Finance, Law, Property, Insurance, etc
 -
 
 [[file:~/code/python/inspector/notes.org::*Notes][Notes]]
-**** Front End
+*** Front End
 :PROPERTIES:
 :ID:       dd6c3b00-b2d3-4fe0-8514-d51bf0987b74
 :END:
 - https://marmelab.com/react-admin/
 - https://www.npmjs.com/package/react-mui-dropzone
 
-*** [2022-04-20 Wed 23:39] keywords, little ml
+** [2022-04-20 Wed 23:39] keywords, little ml
 :PROPERTIES:
 :ID:       2b187899-4b19-496e-b2a7-68c88a5c1ba3
 :END:
@@ -136,7 +125,7 @@ Finance, Law, Property, Insurance, etc
 
 
 [[file:~/code/python/inspector/notes.org::*Notes][Notes]]
-*** [2022-05-03 Tue 08:35] ToR requirements
+** [2022-05-03 Tue 08:35] ToR requirements
 :PROPERTIES:
 :ID:       b8697919-ffc5-46de-af16-a1885cfeff7f
 :END:
@@ -148,7 +137,7 @@ Finance, Law, Property, Insurance, etc
 - match Tors to CVs
   + extract terms (pfm etc)
   + extract required experience
-*** Dagster + dagstermill + Jupyter == MLOpsaas
+** Dagster + dagstermill + Jupyter == MLOpsaas
 :PROPERTIES:
 :ID:       005b9c51-f4e7-4618-94f2-1ae6bf1180c8
 :END:
@@ -159,50 +148,50 @@ Finance, Law, Property, Insurance, etc
 - necessary input validators and option providers, enums etc
 - mlflow integrated with iomanager, ops, and jobs
 -
-**** library compute function integration ops
+*** library compute function integration ops
 :PROPERTIES:
 :ID:       38b728dc-448f-43a4-8f27-4c01d132ca3f
 :END:
 - create @ops and necessary @resources and expose interfaces to config
 - separate pip installable package(s) to install in jupyter container and dagster containers
-***** TODO build compute function ops
+**** TODO build compute function ops
 :PROPERTIES:
 :ID:       4db654a9-0226-4bcf-a205-82016362b3ce
 :END:
-***** scikit-learn
+**** scikit-learn
 :PROPERTIES:
 :ID:       6346cfd9-7502-4761-be1d-7a0f29759f4a
 :END:
-***** keras
+**** keras
 :PROPERTIES:
 :ID:       88d24526-8a82-4d78-8d6b-16d1a1e62ca5
 :END:
-***** tensorflow
+**** tensorflow
 :PROPERTIES:
 :ID:       981571a1-c89c-483d-b149-fbd1d9e85855
 :END:
-***** haystack
+**** haystack
 :PROPERTIES:
 :ID:       60379105-38d3-45d6-8819-7e123ef3dff8
 :END:
-****** huggingface models
+***** huggingface models
 :PROPERTIES:
 :ID:       ef39a967-0242-4ffb-9f85-d0cb922116c6
 :END:
 - group by interface
-***** etc
+**** etc
 :PROPERTIES:
 :ID:       6200adcc-cf90-41c9-8490-4faa25847ae3
 :END:
-**** Data source integration ops
+*** Data source integration ops
 :PROPERTIES:
 :ID:       78fabec2-1685-4123-8a01-47f82a6e880e
 :END:
-***** TODO build data source integration resources
+**** TODO build data source integration resources
 :PROPERTIES:
 :ID:       40acf451-2eec-49fe-b73b-f4b10bcdc68b
 :END:
-****** what about intermediate data transformations?
+***** what about intermediate data transformations?
 :PROPERTIES:
 :ID:       02f9d24f-f27a-4151-a59e-5b3f9c0bcb12
 :END:
@@ -210,52 +199,52 @@ Finance, Law, Property, Insurance, etc
 - ops for standard data transformations?
 - convert all data to some schema?
 - supply graphs which can be parametrised?
-***** aws s3
+**** aws s3
 :PROPERTIES:
 :ID:       a6a77ffa-8ed8-4cb6-b9dc-4319d0cc5878
 :END:
-***** SQL
+**** SQL
 :PROPERTIES:
 :ID:       c056edb4-7356-46f0-915f-2dc0cc49196c
 :END:
-***** noSQL
+**** noSQL
 :PROPERTIES:
 :ID:       25a4818f-192b-47aa-8c42-e64aef62de5b
 :END:
-***** Gdrive
+**** Gdrive
 :PROPERTIES:
 :ID:       387ebe6a-b77d-4ffc-a126-23f9c5aaa0b9
 :END:
-***** Sharepoint
+**** Sharepoint
 :PROPERTIES:
 :ID:       6e40681a-96e5-4d23-bf99-2a2cbbd17833
 :END:
-***** etc
+**** etc
 :PROPERTIES:
 :ID:       30839905-e19e-4489-a3b2-1af7519f61bb
 :END:
 file:~/code/python/inspector/webapp/backend/document_processing/document_processing_ucd/ops/documents.py::document\['content'\] = document\['content'\]]]
-***** MLFlow tracking built in
+**** MLFlow tracking built in
 :PROPERTIES:
 :ID:       538c195f-4557-45a7-a59a-b95f3ad3a17e
 :END:
-****** mlflow looks at and logs to s3
+***** mlflow looks at and logs to s3
 :PROPERTIES:
 :ID:       fcff3d62-ab11-4580-b090-3f1f4c038064
 :END:
-****** ops log names and inputs automatically
+***** ops log names and inputs automatically
 :PROPERTIES:
 :ID:       6aa7c7d3-3ea5-446e-aed4-b1d4d7fcb7fe
 :END:
-****** IDEA io manager that links s3 and mlflow
+***** IDEA io manager that links s3 and mlflow
 :PROPERTIES:
 :ID:       9d882b4e-1ff9-494a-add7-ca0237ad974f
 :END:
-******* track all intermediate assets
+****** track all intermediate assets
 :PROPERTIES:
 :ID:       44516a10-46c4-430e-8462-a3b835237945
 :END:
-**** Standard use cases as pipelines
+*** Standard use cases as pipelines
 :PROPERTIES:
 :ID:       fb08993d-55f8-4ba9-9517-f53e0ebf762c
 :END:
@@ -264,15 +253,15 @@ file:~/code/python/inspector/webapp/backend/document_processing/document_process
 - transient deployments - deploy cluster and launch runs
   + client pays run costs + a bit
 - needs a webapp per industry
-***** TODO Identify industry use cases
+**** TODO Identify industry use cases
 :PROPERTIES:
 :ID:       ac30c6e0-3ff9-41c9-8535-40df00309647
 :END:
-***** IDEA Select and build industry use cases
+**** IDEA Select and build industry use cases
 :PROPERTIES:
 :ID:       80476491-abcc-4b4e-b9f5-8031768831a8
 :END:
-**** Dagstermill + Jupyter
+*** Dagstermill + Jupyter
 :PROPERTIES:
 :ID:       bfea694f-ccc2-47cd-b7d8-1f6bebcb5a38
 :END:
@@ -282,26 +271,26 @@ file:~/code/python/inspector/webapp/backend/document_processing/document_process
 - have access to standard use case pipelines
 - persistent deployment - client chooses how long or indefinite
   + pay run costs + deployment costs + a bit
-***** TODO Integrate and test dagstermill + jupyter
+**** TODO Integrate and test dagstermill + jupyter
 :PROPERTIES:
 :ID:       5cdb25d4-454c-4cf0-81a3-3a5dbe766c04
 :END:
-**** Jupyterlab saves notebooks to s3
+*** Jupyterlab saves notebooks to s3
 :PROPERTIES:
 :ID:       33adbee5-c20e-4ff7-9904-fdbe072a317a
 :END:
 - dagstermill reads them from there
-**** Auth
+*** Auth
 :PROPERTIES:
 :ID:       7abaf1e0-63aa-469a-b099-7e9f030a5db0
 :END:
 - kerberos, cloakey
 - MS, google, etc
-***** TODO add auth
+**** TODO add auth
 :PROPERTIES:
 :ID:       be2ed076-49d1-463c-b689-1264b0df01c9
 :END:
-**** Setup
+*** Setup
 :PROPERTIES:
 :ID:       0319cbf2-2fa6-4187-9f41-6d1430464008
 :END:
@@ -309,95 +298,75 @@ file:~/code/python/inspector/webapp/backend/document_processing/document_process
   + inspector setup with client config
   + inspector + jupyterlab
 - Run jobs on spot instances, select for price, k8s
-***** Test K8s deployments
+**** Test K8s deployments
 :PROPERTIES:
 :ID:       713f2aed-6fbe-4006-8f9a-71c692b85ec9
 :END:
-**** Benefits
+*** Benefits
 :PROPERTIES:
 :ID:       343c017b-3dbf-498f-8d97-4acc410aedd8
 :END:
 - central environment
 - just need a browser and a connection
 - experiment -> production in one step
-**** Costs
+*** Costs
 :PROPERTIES:
 :ID:       d96a81e7-1202-496a-96bd-f32f394e314c
 :END:
 - check the costs on aws
-**** Webapp(s) for industry use cases
+*** Webapp(s) for industry use cases
 :PROPERTIES:
 :ID:       0b0decd0-1b06-4ab0-a68e-b9fd398b46ac
 :END:
-***** We just use our framework for standard cases
+**** We just use our framework for standard cases
 :PROPERTIES:
 :ID:       ab09216c-a4f6-4388-bc3c-29b3a7838a5e
 :END:
-**** People to talk to
-:PROPERTIES:
-:ID:       96d129b3-6e0b-4f88-80c6-50d0cacc505b
-:END:
-***** Dominic
-:PROPERTIES:
-:ID:       5d978c69-0c27-4915-94b6-160871f7fe77
-:END:
-***** Ben Sassoon
-:PROPERTIES:
-:ID:       c715ceaf-95f3-421f-ab19-04ca829c30de
-:END:
-***** Erin
-:PROPERTIES:
-:ID:       f1a4b007-f1fa-4dc3-a36d-46c5b557d6b5
-:END:
-***** Freddie?
-:PROPERTIES:
-:ID:       85edb266-1663-40de-b78f-0ab1132a30cf
-:END:
-- Dscribe
-*** Project Restructure
+** Project Restructure
 :PROPERTIES:
 :ID:       78d487d7-15ef-4732-8e38-24ef915fbed6
 :END:
 
-**** op and resource libraries?
+*** op and resource libraries?
 :PROPERTIES:
 :ID:       b1b4b382-750d-4cc1-b6a5-5845725b9734
 :END:
-***** source integration resources and ops to retrieve
+**** source integration resources and ops to retrieve
 :PROPERTIES:
 :ID:       91462fd6-6519-419f-bbd3-3070e63367b4
 :END:
-****** Sharepoint
+***** Sharepoint
 :PROPERTIES:
 :ID:       13267b31-827e-4eb8-9d47-b5429b4ea646
 :END:
-****** gdrive
+***** gdrive
 :PROPERTIES:
 :ID:       1f26ce29-9be6-4376-a331-558e557a3219
 :END:
-****** dropbox
+***** dropbox
 :PROPERTIES:
 :ID:       9072675a-383a-4569-8e0f-260db2e04bf3
 :END:
-****** etc
+***** etc
 :PROPERTIES:
 :ID:       bd0a5088-8f8b-40df-93c3-2cc7ce5f4d6a
 :END:
-**** common interfaces
+*** common interfaces
 :PROPERTIES:
 :ID:       b7b137d8-47e0-4580-a245-9bfd743ab364
 :END:
-***** eg DataProvider
+**** eg DataProvider
 :PROPERTIES:
 :ID:       ac48c69c-82fd-4b1f-9b80-9a64c21ac6b6
 :END:
-****** =.get(DataIdentifier)=
+Do we need this? Not sure
+***** =.get(DataIdentifier)=
 :PROPERTIES:
 :ID:       0c2188f3-a5e4-41f5-9c0b-38b007dfd37c
 :END:
 - common interface
 - typed configuration
-****** [#B] implementation selected by resource config at definition time
+***** [#B] implementation selected by resource config at definition time
 :PROPERTIES:
 :ID:       a2785046-2d9b-4986-9574-642fa30a4c3a
 :END:
@@ -449,136 +418,71 @@ def get_data(context):
 
 #+end_src
 
-**** document_processing_ucd
+*** document_processing_ucd
 :PROPERTIES:
 :ID:       55ab6c35-99e7-42d7-883b-fb739aebaeea
 :END:
-***** text/image extraction and munging
+**** text/image extraction and munging
 :PROPERTIES:
 :ID:       e8c587cc-12f6-4f93-8583-8772c7688c17
 :END:
-****** tika
+***** tika
 :PROPERTIES:
 :ID:       2f2d14eb-d21e-420b-94a9-217e2bb2afab
 :END:
-****** normalisation and storage
+***** normalisation and storage
 :PROPERTIES:
 :ID:       23f53613-9f19-483a-8df5-cf1fd926a29f
 :END:
-****** upload goes straight to minio
+***** upload goes straight to minio
 :PROPERTIES:
 :ID:       4c09bb3a-e91a-4adb-aa92-a086ae38e88d
 :END:
-******* pipeline pulls from minio
-:PROPERTIES:
-:ID:       a78e9099-d19e-42ff-883b-60e90a711483
-:END:
-**** data processing ucd(s)
+*** data processing ucd(s)
 :PROPERTIES:
 :ID:       65fb72c2-b251-48e3-90dc-3a80b74421c7
 :END:
-***** jupyter
+**** jupyter
 :PROPERTIES:
 :ID:       bdd5df62-fc81-4e61-90c4-22c8453feb2b
 :END:
-**** training & evaluation ucd
-:PROPERTIES:
-:ID:       27b8d75c-08df-4d64-b043-f3c031d35f47
-:END:
-***** TODO UCDs per library
-:PROPERTIES:
-:ID:       58c25f1f-16a6-4c57-8ce2-b97672ba8dca
-:END:
-generic resources in infrastructure
-specific resource clients/strategies in the ucd
-so an sklearn-ucd would be able to train with the ModelTrainer
-but would use the trainers specified in the ucd
-**** model application ucd
+*** model application ucd
 :PROPERTIES:
 :ID:       bd829e1c-f727-46aa-ac8a-41828dc72f02
 :END:
-**** webapps and front-ends
+*** webapps and front-ends
 :PROPERTIES:
 :ID:       89b039e2-4885-44d4-a56d-28d825214246
 :END:
-*** Demo use cases
+** Demo use cases
 :PROPERTIES:
 :ID:       2ff5dd3a-fe2d-4787-898c-1d3ab04d4cac
 :END:
-**** chatbot
+*** chatbot
 :PROPERTIES:
 :ID:       b42f6892-1c01-4b86-b5ba-fb3c79a09eb9
 :END:
-**** information extraction
+*** information extraction
 :PROPERTIES:
 :ID:       98bc7848-1dd3-4698-a753-4cba65656ab6
 :END:
-***** contracts etc
+**** contracts etc
 :PROPERTIES:
 :ID:       e9e7cc63-4ef1-45ea-bd63-a6822ae6ffc6
 :END:
-**** information retrieval and categorisation
+*** information retrieval and categorisation
 :PROPERTIES:
 :ID:       1808049f-727a-41f9-a2a8-822be707fbca
 :END:
-***** marketing data analysis
+**** marketing data analysis
 :PROPERTIES:
 :ID:       530837c4-a554-4195-ac1d-291d9fb008ae
 :END:
-**** facial recognition
+*** facial recognition
 :PROPERTIES:
 :ID:       2ac56926-9e3b-4068-ab2e-425e4eb38e1e
 :END:
-***** identity validation
+**** identity validation
 :PROPERTIES:
 :ID:       ec529498-51e8-4269-8a6a-436e443106ad
-:END:
-*** First things:
-:PROPERTIES:
-:ID:       21997662-c0b9-4b48-92c7-ccea308d8d87
-:END:
-**** DONE doc -> text pipeline
-CLOSED: [2022-08-28 Sun 18:44]
-:PROPERTIES:
-:ID:       bd4da579-aed7-4eb5-b786-952970d309cc
-:END:
-**** TODO tokenization pipeline
-:PROPERTIES:
-:ID:       2f87af76-dc32-44f5-b363-48db120fa1fa
-:END:
-**** TODO training pipeline
-:PROPERTIES:
-:ID:       c9d3a54e-3954-421f-800b-387e2188a3a4
-:END:
-**** TODO evaluation pipeline
-:PROPERTIES:
-:ID:       dc86e743-f7ef-4b1c-b4f7-70a90e6dd329
-:END:
-*** Project restructure
-:PROPERTIES:
-:ID:       32d58c38-b3b8-43e9-ac88-84c430fc3c1d
-:END:
-**** implementation specific code lives in the ucd
-:PROPERTIES:
-:ID:       1a98b328-c56d-4d91-8470-f91aa62f918d
-:END:
-sklearn specific code for example, or huggingface code
-this means that each ucd doesnt get massive because the infrastructure package doesnt force all ucds to download all the packages
-**** infrastucture package just holds non implementation specific code
-:PROPERTIES:
-:ID:       6a2ee9c3-a982-4f5c-994c-6d5dfe4e7830
-:END:
-storage integration, s3, azure etc
-maybe some standardised data processors? actually no, because they are for small amounts of processing - dedicated data pipelines should process the data as much as possible before training etc
-**** Clean up
-:PROPERTIES:
-:ID:       4d81d1d7-4876-4756-87a7-1e9d341d3dee
-:END:
-*** Fork for each use case
-:PROPERTIES:
-:ID:       067c1589-4e95-43b6-8ac8-d00ac7a58479
-:END:
-**** specific webapp & FE
-:PROPERTIES:
-:ID:       fd8b63b4-05f3-4982-b3c6-db65b860a479
 :END:

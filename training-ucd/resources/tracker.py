@@ -11,7 +11,7 @@ ExperimentTracker.trackers = {MLFlowTracker.__name__: MLFlowTracker}
         "tracker": str,
         **{
             tracker_config_name: Field(Noneable(tracker.resource_config.get_config()))
-            for tracker_config_name, tracker in ModelTracker.trackers.items()
+            for tracker_config_name, tracker in ExperimentTracker.trackers.items()
         },
     }
 )

@@ -32,7 +32,7 @@ class TrainerConfig(ServiceConfig):
 
 class Trainer(ABC):
     """
-    This class is designed to provide a common interface for all data trainers.
+    This class is designed to provide a common interface for all model trainers.
 
     You should subclass this class for your use case, and implement the `train`
     method.
